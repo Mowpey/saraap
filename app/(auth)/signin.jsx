@@ -27,6 +27,18 @@ const SignInScreen = () => {
   const [password, setPassword] = useState("");
   const [emailIsFocused, setEmailToFocused] = useState(false);
   const [passwordIsFocused, setPasswordToFocused] = useState(false);
+  const [showError, setShowError] = useState(false);
+
+  const validateEmail = (inputText) => {
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.(com|net|org|edu|gov|mil|co|io|ai|uk|ca|de|fr|jp|au|[\w-]{2,})$/i;
+    return emailRegex.test(inputText);
+  };
+
+  const handleSignIn = () => {
+    const isValid = validateEmail(email);
+    setShowError(!isValid);
+  };
 
   return (
     <SafeAreaProvider>
@@ -50,10 +62,16 @@ const SignInScreen = () => {
             style={[
               styles.formInputStyle,
               emailIsFocused && styles.formIsActive,
+              showError && styles.inputError,
             ]}
             onFocus={() => setEmailToFocused(true)}
             onBlur={() => setEmailToFocused(false)}
           />
+          {showError && (
+            <Text style={styles.errorText}>
+              Please enter a valid email address (e.g., example@domain.com)
+            </Text>
+          )}
 
           <Text style={styles.formTitleStyle}>Password</Text>
           <TextInput
@@ -72,10 +90,7 @@ const SignInScreen = () => {
             onBlur={() => setPasswordToFocused(false)}
           />
           <View style={styles.buttonContainer}>
-            <Pressable
-              style={styles.signInButtonStyle}
-              onPress={() => console.log("Sign in Button Pressed!")}
-            >
+            <Pressable style={styles.signInButtonStyle} onPress={handleSignIn}>
               <Text style={styles.signInTextStyle}>Sign In</Text>
             </Pressable>
             <Link href="/signin" style={styles.forgotPasswordStyle}>
@@ -217,6 +232,12 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontFamily: "Poppins-Medium",
     color: "#130E40",
+  },
+  errorText: {
+    color: "#ef4444",
+    fontSize: 15,
+    marginVertical: 4,
+    fontFamily: "Poppins-Regular",
   },
 });
 
