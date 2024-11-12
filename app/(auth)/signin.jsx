@@ -50,6 +50,11 @@ const SignInScreen = () => {
         </View>
         {/* Sign in forms and buttons */}
         <View style={styles.FormContainerStyle}>
+          {showError && (
+            <Text style={styles.errorText}>
+              Incorrect email or password. Please try again.
+            </Text>
+          )}
           <Text style={styles.formTitleStyle}>Email Address</Text>
           <TextInput
             onChangeText={setEmail}
@@ -62,16 +67,10 @@ const SignInScreen = () => {
             style={[
               styles.formInputStyle,
               emailIsFocused && styles.formIsActive,
-              showError && styles.inputError,
             ]}
             onFocus={() => setEmailToFocused(true)}
             onBlur={() => setEmailToFocused(false)}
           />
-          {showError && (
-            <Text style={styles.errorText}>
-              Please enter a valid email address (e.g., example@domain.com)
-            </Text>
-          )}
 
           <Text style={styles.formTitleStyle}>Password</Text>
           <TextInput
@@ -152,11 +151,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   FormContainerStyle: {
-    marginTop: 70,
+    marginTop: 50,
   },
   formTitleStyle: {
     fontFamily: "Poppins-Regular",
     fontSize: 20,
+    marginTop: 10,
   },
   formInputStyle: {
     marginVertical: 10,
@@ -238,6 +238,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginVertical: 4,
     fontFamily: "Poppins-Regular",
+    backgroundColor: "pink",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginVertical: 5,
   },
 });
 
