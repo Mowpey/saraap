@@ -6,7 +6,6 @@ import {
   Pressable,
   TouchableOpacity,
   Image,
-  Alert,
   StyleSheet,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -60,7 +59,7 @@ const SignInScreen = () => {
             onChangeText={setEmail}
             value={email}
             placeholder="Type your email address"
-            placeholderTextColor={"#9ca5b5"}
+            placeholderTextColor={"gray"}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
@@ -77,7 +76,7 @@ const SignInScreen = () => {
             onChangeText={setPassword}
             value={password}
             placeholder="Type your password"
-            placeholderTextColor={"#9ca5b5"}
+            placeholderTextColor={"gray"}
             autoCapitalize="none"
             autoComplete="current-password"
             secureTextEntry={true}
@@ -162,23 +161,23 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     height: 45,
     borderRadius: 10,
-    borderColor: "gray",
+    borderColor: "#cfcfcf",
     borderWidth: 2,
     padding: 10,
+    outlineStyle: "none",
   },
   formIsActive: {
-    borderWidth: 0,
+    borderWidth: 2,
+    borderColor: "blue",
   },
   buttonContainer: {
     marginVertical: 10,
-    flex: 1,
     justifyContent: "center",
   },
   signInButtonStyle: {
     borderRadius: 10,
-    flex: 1,
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 12,
     backgroundColor: "#020452",
   },
   signInTextStyle: {
@@ -242,7 +241,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 10,
-    marginVertical: 5,
   },
 });
 
