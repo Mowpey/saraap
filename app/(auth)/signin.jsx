@@ -133,7 +133,6 @@ const SignInScreen = () => {
 const styles = StyleSheet.create({
   safeAreaContainer: {
     padding: 25,
-    flex: 1,
     justifyContent: "flex-start",
   },
   upperContainer: {

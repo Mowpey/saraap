@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useFonts } from "expo-font";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import backArrow from "@/assets/images/arrow-back.png";
 import profilePicture from "@/assets/images/profile.png";
 import * as ImagePicker from "expo-image-picker";
@@ -39,10 +39,18 @@ const SignUpScreen = () => {
   ];
 
   const emailValidator = () => {
-    if (exampleEmails.includes(emailAddress)) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (emailAddress == "") {
+      setEmailError(false);
+      router.push("/address");
+    } else if (exampleEmails.includes(emailAddress)) {
+      setEmailError(true);
+    } else if (!emailRegex.test(emailAddress)) {
       setEmailError(true);
     } else {
       setEmailError(false);
+      router.push("/address");
     }
   };
 
@@ -135,7 +143,7 @@ const SignUpScreen = () => {
           />
           {emailError && (
             <Text style={styles.emailErrorStyle}>
-              Email id is already registered
+              Email is invalid or already registered!
             </Text>
           )}
 
@@ -180,7 +188,6 @@ const SignUpScreen = () => {
 const styles = StyleSheet.create({
   safeAreaContainer: {
     padding: 25,
-    flex: 1,
     justifyContent: "flex-start",
   },
   upperSignUpContainer: {
@@ -224,7 +231,6 @@ const styles = StyleSheet.create({
   },
   continueButtonStyle: {
     borderRadius: 10,
-
     alignItems: "center",
     paddingVertical: 12,
     backgroundColor: "#020452",
