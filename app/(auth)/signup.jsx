@@ -88,18 +88,18 @@ const SignUpScreen = () => {
         </View>
         {/*  Sign Up Icon and Text Description  END*/}
 
-        <Pressable onPress={pickImage}>
-          <View style={styles.profilePictureContainer}>
+        <View style={styles.profilePictureContainer}>
+          <Pressable onPress={pickImage}>
             <Image
               source={
                 selectedProfilePicture
                   ? { uri: selectedProfilePicture }
                   : profilePicture
               }
-              style={{ width: "100%", height: "100%" }}
+              style={{ width: 120, height: 120 }}
             ></Image>
-          </View>
-        </Pressable>
+          </Pressable>
+        </View>
 
         <View>
           <Text style={styles.formTitleStyle}>Full Name</Text>
