@@ -24,7 +24,7 @@ const RegisteredScreen = () => {
               Now you are able to order {"\n"}some foods as a self-reward
             </Text>
             <Pressable
-              onPress={() => router.push("/signin")}
+              onPress={() => router.push("/tabs/")}
               style={styles.findFoodContainer}
             >
               <Text style={styles.findFoodText}>Find Foods</Text>
