@@ -29,7 +29,7 @@ const PaymentScreen = () => {
           <Text style={styles.buttonText}>Order Other Foods</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={[styles.button, styles.purpleButton]}>
+        <TouchableOpacity href="/screen/payment_order/payment_progress" style={[styles.button, styles.purpleButton]}>
           <Text style={styles.buttonTextPurp}>View My Order</Text>
         </TouchableOpacity>
       </View>

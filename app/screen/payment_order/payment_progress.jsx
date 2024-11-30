@@ -9,6 +9,7 @@ import {
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
+import{Link} from 'expo-router'
 
 const PaymentScreen = () => {
   const [customFonts] = useFonts({
@@ -52,11 +53,13 @@ const PaymentScreen = () => {
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
+      <Link href="/tabs/order">
         <TouchableOpacity style={styles.backButton} activeOpacity={0.7}>
           <View style={styles.backButtonContainer}>
             <Ionicons name="chevron-back" size={scale(15)} color="#ffffff" />
           </View>
         </TouchableOpacity>
+        </Link>
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerTitle}>Payment</Text>
           <Text style={styles.headerSubtitle}>You deserve better meal</Text>
@@ -97,7 +100,8 @@ const PaymentScreen = () => {
       <DetailRow label={orderDetails.orderid} value={orderDetails.orderstatus} isGreen />
 
       {/* Checkout Button */}
-      <TouchableOpacity style={styles.checkoutButton}>
+      
+      <TouchableOpacity href="/screen/payment_order/order_empty" style={styles.checkoutButton}>
         <Text style={styles.checkoutButtonText}>Cancel My Order</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -134,7 +138,7 @@ const styles = {
   headerTitle: {
     fontSize: moderateScale(24),
     fontWeight: 'bold',
-    fontFamily: 'Poppins-Medium',
+    fontFamily: 'Poppins-Regular',
   },
   headerSubtitle: {
     fontSize: moderateScale(14),
