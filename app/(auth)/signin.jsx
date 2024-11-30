@@ -36,8 +36,11 @@ const SignInScreen = () => {
 
   const handleSignIn = () => {
     const isValid = validateEmail(email);
-    setShowError(!isValid);
-    router.push("/tabs/");
+    if (isValid) {
+      router.push("/tabs/");
+    } else {
+      setShowError(true);
+    }
   };
 
   return (
