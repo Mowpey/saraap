@@ -2,6 +2,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React, { useState } from 'react';
 import { ScrollView, View, Image, StyleSheet, Dimensions, Text, TouchableOpacity, TextInput, Pressable } from 'react-native';
+import {Link} from 'expo-router'
 
 const { width } = Dimensions.get('window');
 
@@ -32,7 +33,8 @@ const newTasteItems = [
     name: 'Soup',
     price: '000000',
     rating: 4.1,
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSL4yXMG6VQlvi5Z8ErBIJ1frJCnF_hCNyIQQ&s'
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSL4yXMG6VQlvi5Z8ErBIJ1frJCnF_hCNyIQQ&s',
+
   },
   {
     id: 2,
@@ -63,7 +65,8 @@ const popularItems = [
     name: 'Pizza',
     price: '000000',
     rating: 4.8,
-    image: 'https://www.foodandwine.com/thmb/Wd4lBRZz3X_8qBr69UOu2m7I2iw=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/classic-cheese-pizza-FT-RECIPE0422-31a2c938fc2546c9a07b7011658cfd05.jpg'
+    image: 'https://www.foodandwine.com/thmb/Wd4lBRZz3X_8qBr69UOu2m7I2iw=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/classic-cheese-pizza-FT-RECIPE0422-31a2c938fc2546c9a07b7011658cfd05.jpg',
+
   },
   {
     id: 2,
@@ -150,9 +153,10 @@ export default function App() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollView}
         >
+    
           {images.map((image) => (
             <Pressable key={image.id} style={styles.card}>
-              <Image source={{ uri: image.uri }} style={styles.image} />
+              <Image  source={{ uri: image.uri }} style={styles.image} />
               <Text style={styles.title}>{image.title}</Text>
               <Text style={styles.ratings}>{image.ratings} <Entypo name="star" size={20} color="yellow" /></Text>
             </Pressable>

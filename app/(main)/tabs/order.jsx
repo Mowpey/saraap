@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet, Animated }
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
+import { Link } from "expo-router";
 
 const OrdersScreen = () => {
   const [activeTab, setActiveTab] = useState('In Progress');
@@ -26,15 +27,15 @@ const OrdersScreen = () => {
   }, [activeTab]);
 
   const inProgressOrders = [
-    { id: 1, title: 'Avocado', count: '3 items • P 60', image: require('@/assets/images/bawang.png') },
-    { id: 2, title: 'Kopiko', count: '10 items • P 50', image: require('@/assets/images/bawang.png') },
-        { id: 3, title: 'Sprinkle', count: '2 items • P 50', image: require('@/assets/images/bawang.png') },
-    { id: 4, title: 'Bowang', count: '10 items • P 100', image: require('@/assets/images/bawang.png') },
+    { id: 1, title: 'Avocado', count: '3 items • ₱ 60', image: require('@/assets/images/avocado.jpg') },
+    { id: 2, title: 'Kopiko', count: '10 items • ₱ 50', image: require('@/assets/images/kopiko.jpg') },
+        { id: 3, title: 'Sprinkle', count: '2 items • ₱ 50', image: require('@/assets/images/sprinkle.jpg') },
+    { id: 4, title: 'Bawang', count: '10 items • ₱ 100', image: require('@/assets/images/bawang.png') },
   ];
 
   const pastOrders = [
-    { id: 1, title: 'Curry', count: '1 item • P 99', image: require('@/assets/images/bawang.png'), date: 'Nov 3', time: '14:00' },
-    { id: 2, title: 'Avocado', count: '1 item • P 79', image: require('@/assets/images/bawang.png'), date: 'Nov 3', time: '09:00', status: 'Cancelled' },
+    { id: 1, title: 'Curry', count: '1 item • ₱ 99', image: require('@/assets/images/curry.jpg'), date: 'Nov 3', time: '14:00' },
+    { id: 2, title: 'Avocado', count: '1 item • ₱ 60', image: require('@/assets/images/avocado.jpg'), date: 'Nov 3', time: '09:00', status: 'Cancelled' },
   ];
 
   const ordersToDisplay = activeTab === 'In Progress' ? inProgressOrders : pastOrders;
@@ -42,6 +43,8 @@ const OrdersScreen = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Header */}
+
+
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} activeOpacity={0.7}>
           <View style={styles.backButtonContainer}>
