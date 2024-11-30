@@ -24,20 +24,20 @@ const PaymentScreen = () => {
 
   const orderDetails = {
     name: "Cherry Healthy",
-    price: "IDR 289.000",
-    items: 14,
-    transactionId: "0000000",
-    driverId: "000000",
-    tax: "0000000",
-    totalPrice: "000000000",
+    price: "IDR 1000.00",
+    items: 4,
+    transactionId: "#01222024",
+    driverId: "#202401",
+    tax: "₱ 100",
+    totalPrice: "₱ 1000",
     orderid:"#FM209391",
     orderstatus:"Paid",
     delivery: {
       name: "Ken Robbie Galapate",
       phone: "0929 0819 9688",
-      address: "Sa Kanto",
-      houseNo: "Nasa",
-      city: "Tugue"
+      address: "Carig, Golden Harvest",
+      houseNo: "2368",
+      city: "Tuguegarao"
     }
   };
 

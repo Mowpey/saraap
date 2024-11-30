@@ -32,12 +32,14 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(main)/tabs" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{headerShown:false}} />
         <Stack.Screen name="+not-found" />
+
       </Stack>
     </ThemeProvider>
   );
 }
+{/* <Link href="/screen/food_details/food_details">Link</Link> */}
