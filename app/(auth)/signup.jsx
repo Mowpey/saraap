@@ -31,6 +31,8 @@ const SignUpScreen = () => {
   const [passwordIsFocused, setPasswordToFocused] = useState(false);
   const [selectedProfilePicture, setSelectedProfilePicture] = useState(null);
   const [emailError, setEmailError] = useState(false);
+  const [nameEmpty, setNameEmpty] = useState(false);
+  const [passwordEmpty, setPasswordEmpty] = useState(false);
 
   const exampleEmails = [
     "markangelo@gmail.com",
@@ -38,12 +40,23 @@ const SignUpScreen = () => {
     "louie@gmail.com",
   ];
 
-  const emailValidator = () => {
+  const formValidator = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+    setNameEmpty(false);
+    setPasswordEmpty(false);
+
+    if (fullName.trim() === "") {
+      setNameEmpty(true);
+      return;
+    }
+    if (password.trim() === "") {
+      setPasswordEmpty(true);
+      return;
+    }
+
     if (emailAddress == "") {
-      setEmailError(false);
-      router.push("/address");
+      setEmailError(true);
     } else if (exampleEmails.includes(emailAddress)) {
       setEmailError(true);
     } else if (!emailRegex.test(emailAddress)) {
@@ -112,10 +125,24 @@ const SignUpScreen = () => {
             style={[
               styles.formInputStyle,
               fullNameIsFocused && styles.fullNameIsFocusedStyle,
+              {
+                borderColor: fullNameIsFocused
+                  ? nameEmpty
+                    ? "#ef4444"
+                    : "#7aeb34"
+                  : nameEmpty
+                  ? "#ef4444"
+                  : "#cfcfcf",
+              },
             ]}
             onFocus={() => setFullNameToFocused(true)}
             onBlur={() => setFullNameToFocused(false)}
           />
+          {nameEmpty && (
+            <Text style={styles.formErrorStyle}>
+              Name cannot be left empty!
+            </Text>
+          )}
 
           <Text style={styles.formTitleStyle}>Email Address</Text>
           <TextInput
@@ -142,8 +169,8 @@ const SignUpScreen = () => {
             onBlur={() => setEmailToFocused(false)}
           />
           {emailError && (
-            <Text style={styles.emailErrorStyle}>
-              Email is invalid or already registered!
+            <Text style={styles.formErrorStyle}>
+              The email address is invalid, empty, or already in use.
             </Text>
           )}
 
@@ -158,15 +185,27 @@ const SignUpScreen = () => {
             style={[
               styles.formInputStyle,
               passwordIsFocused && styles.passwordIsFocusedStyle,
+              {
+                borderColor: passwordIsFocused
+                  ? passwordEmpty
+                    ? "#ef4444"
+                    : "#7aeb34"
+                  : passwordEmpty
+                  ? "#ef4444"
+                  : "#cfcfcf",
+              },
             ]}
             onFocus={() => setPasswordToFocused(true)}
             onBlur={() => setPasswordToFocused(false)}
           />
 
-          <Pressable
-            onPress={emailValidator}
-            style={styles.continueButtonStyle}
-          >
+          {passwordEmpty && (
+            <Text style={styles.formErrorStyle}>
+              Password cannot be left empty!
+            </Text>
+          )}
+
+          <Pressable onPress={formValidator} style={styles.continueButtonStyle}>
             <Text style={styles.continueTextStyle}>Continue</Text>
           </Pressable>
 
@@ -273,7 +312,7 @@ const styles = StyleSheet.create({
     borderColor: "#7aeb34",
     outlineStyle: "none",
   },
-  emailErrorStyle: {
+  formErrorStyle: {
     color: "#ef4444",
     fontSize: 15,
     marginVertical: 4,
