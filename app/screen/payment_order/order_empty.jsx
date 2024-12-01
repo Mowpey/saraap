@@ -25,7 +25,7 @@ const PaymentScreen = () => {
        Seems like you have not ordered any food yet
       </Text>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={[styles.button, styles.grayButton]}>
+        <TouchableOpacity href="/tabs/" style={[styles.button, styles.grayButton]}>
           <Text style={styles.buttonText}>Find Foods</Text>
         </TouchableOpacity>
         

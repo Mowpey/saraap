@@ -46,11 +46,11 @@ const OrdersScreen = () => {
 
 
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} activeOpacity={0.7}>
+        {/* <TouchableOpacity style={styles.backButton} activeOpacity={0.7}>
           <View style={styles.backButtonContainer}>
             <Ionicons name="chevron-back" size={scale(15)} color="#ffffff" />
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerTitle}>Your Orders</Text>
           <Text style={styles.headerSubtitle}>Wait for the best meal</Text>
@@ -106,7 +106,13 @@ const OrdersScreen = () => {
           </View>
         ))}
       </View>
+      {activeTab === 'In Progress' && (
+  <TouchableOpacity style={styles.reviewButton}>
+     <Link href="/screen/payment_order/payment_address"> <Text style={styles.buttonText}>Review Payment and Address</Text></Link>
+  </TouchableOpacity>
+)}
     </ScrollView>
+    
   );
 };
 
@@ -140,7 +146,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: moderateScale(24),
     fontWeight: 'bold',
-    fontFamily: 'Poppins-Medium',
+    fontFamily: 'Poppins-Regular',
   },
   headerSubtitle: {
     fontSize: moderateScale(14),
@@ -224,6 +230,21 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(12),
     color: 'red',
     marginTop: verticalScale(4),
+  },
+  reviewButton: {
+    backgroundColor: '#000',
+    paddingVertical: verticalScale(12),
+    paddingHorizontal: scale(16),
+    borderRadius: moderateScale(8),
+    alignItems: 'center',
+    marginTop: verticalScale(160),
+    alignSelf: 'center',
+    width: '90%',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: moderateScale(16),
+    fontFamily: 'Poppins-Medium',
   },
 });
 
