@@ -117,15 +117,15 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.firstLayer}>
-       <Link href="/screen/address/myaddress" style={styles.buttonContainer}>
-        <TouchableOpacity >
+      <Link href="/screen/favorites/myfavorites" asChild>
+        <TouchableOpacity style={styles.buttonContainer}>
             <View style={styles.textContainer}>
               <Text style={styles.textPrimary}>Golden Harvest Subdi.</Text>
               <Text style={styles.textSub}>Tuguegarao City, Cagayan</Text>
             </View>
             <Entypo name="location" style={styles.buttonIcon}/>
           </TouchableOpacity>
-        </Link>
+      </Link>
         <Link href="/screen/favorites/myfavorites" >
           <TouchableOpacity style={styles.faveContainer}>
             <MaterialIcons name="favorite" style={styles.faveIcon}/>
