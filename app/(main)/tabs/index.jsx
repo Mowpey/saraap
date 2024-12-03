@@ -117,16 +117,20 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.firstLayer}>
-        <TouchableOpacity style={styles.buttonContainer}>
-          <View style={styles.textContainer}>
-            <Text style={styles.textPrimary}>Golden Harvest Subdi.</Text>
-            <Text style={styles.textSub}>Tuguegarao City, Cagayan</Text>
-          </View>
-          <Entypo name="location" style={styles.buttonIcon}/>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.faveContainer}>
-          <MaterialIcons name="favorite" style={styles.faveIcon}/>
-        </TouchableOpacity>
+       <Link href="/screen/address_screen/myaddress" style={styles.buttonContainer}>
+        <TouchableOpacity >
+            <View style={styles.textContainer}>
+              <Text style={styles.textPrimary}>Golden Harvest Subdi.</Text>
+              <Text style={styles.textSub}>Tuguegarao City, Cagayan</Text>
+            </View>
+            <Entypo name="location" style={styles.buttonIcon}/>
+          </TouchableOpacity>
+        </Link>
+        <Link href="/screen/favorites/myfavorites" >
+          <TouchableOpacity style={styles.faveContainer}>
+            <MaterialIcons name="favorite" style={styles.faveIcon}/>
+          </TouchableOpacity>
+        </Link>
       </View>
 
       <View style={styles.searchContainer}>
@@ -146,7 +150,7 @@ export default function App() {
           {images.map((image) => (
               <Link 
               key={image.id} 
-              href={`tabs/food-details/${image.id}`} 
+              href={`screen/food_details/${image.id}`} 
               style={styles.card}
             >
               <Image source={{ uri: image.uri }} style={styles.image} />
@@ -228,7 +232,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     flexDirection: 'row',
-    gap: 30,
+    gap: 50,
     borderRadius: 8,
     backgroundColor: '#130E40',
     alignItems: 'center',
