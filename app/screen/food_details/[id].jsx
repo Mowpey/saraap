@@ -11,7 +11,7 @@ const foodDetails = {
     likes: 14,
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed semper pretium est sollicitudin nec.',
     ingredients: 'Nam quis nibh velit',
-    price: '00000'
+    price: 'P15'
   },
   2: {
     name: 'Burger',
@@ -20,7 +20,7 @@ const foodDetails = {
     likes: 20,
     description: 'Classic burger with fresh ingredients and special sauce.',
     ingredients: 'Beef patty, lettuce, tomato, cheese',
-    price: '00000'
+    price: 'P30'
   },
   3: {
     name: 'Carbonara',
@@ -29,7 +29,7 @@ const foodDetails = {
     likes: 10,
     description: 'Traditional Italian pasta with creamy sauce.',
     ingredients: 'Pasta, eggs, pancetta, cheese',
-    price: '00000'
+    price: 'P30'
   }
 };
 

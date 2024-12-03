@@ -31,21 +31,21 @@ const newTasteItems = [
   {
     id: 1,
     name: 'Soup',
-    price: '000000',
+    price: 'P15',
     rating: 4.1,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSL4yXMG6VQlvi5Z8ErBIJ1frJCnF_hCNyIQQ&s'
   },
   {
     id: 2,
     name: 'Chicken',
-    price: '000000',
+    price: 'P30',
     rating: 4.7,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMgZG3x99SMnWwv6OkticJ4JQG1m9Qg3Wu0g&s'
   },
   {
     id: 3,
     name: 'Shrimp',
-    price: '000000',
+    price: 'P50',
     rating: 3.2,
     image: 'https://www.seriouseats.com/thmb/ch4c6o15shxPyfO8jnSfUh_wQ0s=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/__opt__aboutcom__coeus__resources__content_migration__serious_eats__seriouseats.com__recipes__images__2015__08__09102015-grilled-lemongrass-shrimp-shaozhizhong-8-a5525792ce7a4c9693af0a564eae74a4.jpg'
   },
@@ -55,21 +55,21 @@ const popularItems = [
   {
     id: 1,
     name: 'Pizza',
-    price: '000000',
+    price: 'P50',
     rating: 4.8,
     image: 'https://www.foodandwine.com/thmb/Wd4lBRZz3X_8qBr69UOu2m7I2iw=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/classic-cheese-pizza-FT-RECIPE0422-31a2c938fc2546c9a07b7011658cfd05.jpg'
   },
   {
     id: 2,
     name: 'Sushi',
-    price: '000000',
+    price: 'P70',
     rating: 4.6,
     image: 'https://cdn.britannica.com/52/128652-050-14AD19CA/Maki-zushi.jpg'
   },
   {
     id: 3,
     name: 'Pasta',
-    price: '000000',
+    price: 'P80',
     rating: 4.5,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjyhQhuaq9lhzjwT7gZur76QjviLeQc9D6Gw&s'
   }
@@ -79,21 +79,21 @@ const recommendedItems = [
   {
     id: 1,
     name: 'Salad',
-    price: '000000',
+    price: 'P90',
     rating: 4.3,
     image: 'https://www.eatingwell.com/thmb/CcLY-9Ru3OWpd5k_V-hoxlk4whg=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/chopped-power-salad-with-chicken-hero-1x1-0178-475bbf1bbd884d5d97fc236b8975dff2.jpg'
   },
   {
     id: 2,
     name: 'Ramen',
-    price: '000000',
+    price: 'P100',
     rating: 4.6,
     image: 'https://cdn.britannica.com/77/234877-050-01EC3819/Tonkotsu-ramen.jpg'
   },
   {
     id: 3,
     name: 'Steak',
-    price: '000000',
+    price: 'P80',
     rating: 4.7,
     image: 'https://www.allrecipes.com/thmb/OJ28fIFte6Pyg93ML8IM-APbu1Y=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/AR-14554-sirloin-steak-with-garlic-butter-hero-4x3-d12fa79836754fcf850388e4677bbf55.jpg'
   }
@@ -117,7 +117,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.firstLayer}>
-       <Link href="/screen/address_screen/myaddress" style={styles.buttonContainer}>
+       <Link href="/screen/address/myaddress" style={styles.buttonContainer}>
         <TouchableOpacity >
             <View style={styles.textContainer}>
               <Text style={styles.textPrimary}>Golden Harvest Subdi.</Text>
@@ -198,7 +198,7 @@ export default function App() {
               />
               <View href="tabs/food-details.jsx" style={styles.foodInfo}>
                 <Text style={styles.foodName}>{item.name}</Text>
-                <Text style={styles.foodPrice}>$ {item.price}</Text>
+                <Text style={styles.foodPrice}>{item.price}</Text>
                 <View style={styles.ratingContainer}>
                   <Text style={styles.stars}>
                     {'★'.repeat(Math.floor(item.rating))}
