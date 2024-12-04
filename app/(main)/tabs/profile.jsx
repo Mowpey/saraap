@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#130E40',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -137,14 +137,14 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#007AFF',
+    borderBottomColor: '#130E40',
   },
   tabText: {
     fontSize: 16,
     color: '#666',
   },
   activeTabText: {
-    color: '#007AFF',
+    color: '#130E40',
     fontWeight: 'bold',
   },
   contentContainer: {
