@@ -1,8 +1,8 @@
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React, { useState } from 'react';
-import { ScrollView, View, Image, StyleSheet, Dimensions, Text, TouchableOpacity, TextInput, Pressable } from 'react-native';
-import {Link} from 'expo-router'
+import { ScrollView, View, Image, StyleSheet, Dimensions, Text, TouchableOpacity, TextInput } from 'react-native';
+import { Link } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -31,54 +31,45 @@ const newTasteItems = [
   {
     id: 1,
     name: 'Soup',
-    price: '000000',
+    price: 'P15',
     rating: 4.1,
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSL4yXMG6VQlvi5Z8ErBIJ1frJCnF_hCNyIQQ&s',
-
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSL4yXMG6VQlvi5Z8ErBIJ1frJCnF_hCNyIQQ&s'
   },
   {
     id: 2,
     name: 'Chicken',
-    price: '000000',
+    price: 'P30',
     rating: 4.7,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMgZG3x99SMnWwv6OkticJ4JQG1m9Qg3Wu0g&s'
   },
   {
     id: 3,
     name: 'Shrimp',
-    price: '000000',
+    price: 'P50',
     rating: 3.2,
     image: 'https://www.seriouseats.com/thmb/ch4c6o15shxPyfO8jnSfUh_wQ0s=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/__opt__aboutcom__coeus__resources__content_migration__serious_eats__seriouseats.com__recipes__images__2015__08__09102015-grilled-lemongrass-shrimp-shaozhizhong-8-a5525792ce7a4c9693af0a564eae74a4.jpg'
   },
-  {
-    id: 4,
-    name: 'Burger',
-    price: '000000',
-    rating: 3.2,
-    image: 'https://assets.unileversolutions.com/recipes-v2/243652.jpg'
-  }
 ];
 
 const popularItems = [
   {
     id: 1,
     name: 'Pizza',
-    price: '000000',
+    price: 'P50',
     rating: 4.8,
-    image: 'https://www.foodandwine.com/thmb/Wd4lBRZz3X_8qBr69UOu2m7I2iw=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/classic-cheese-pizza-FT-RECIPE0422-31a2c938fc2546c9a07b7011658cfd05.jpg',
-
+    image: 'https://www.foodandwine.com/thmb/Wd4lBRZz3X_8qBr69UOu2m7I2iw=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/classic-cheese-pizza-FT-RECIPE0422-31a2c938fc2546c9a07b7011658cfd05.jpg'
   },
   {
     id: 2,
     name: 'Sushi',
-    price: '000000',
+    price: 'P70',
     rating: 4.6,
     image: 'https://cdn.britannica.com/52/128652-050-14AD19CA/Maki-zushi.jpg'
   },
   {
     id: 3,
     name: 'Pasta',
-    price: '000000',
+    price: 'P80',
     rating: 4.5,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjyhQhuaq9lhzjwT7gZur76QjviLeQc9D6Gw&s'
   }
@@ -88,21 +79,21 @@ const recommendedItems = [
   {
     id: 1,
     name: 'Salad',
-    price: '000000',
+    price: 'P90',
     rating: 4.3,
     image: 'https://www.eatingwell.com/thmb/CcLY-9Ru3OWpd5k_V-hoxlk4whg=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/chopped-power-salad-with-chicken-hero-1x1-0178-475bbf1bbd884d5d97fc236b8975dff2.jpg'
   },
   {
     id: 2,
     name: 'Ramen',
-    price: '000000',
+    price: 'P100',
     rating: 4.6,
     image: 'https://cdn.britannica.com/77/234877-050-01EC3819/Tonkotsu-ramen.jpg'
   },
   {
     id: 3,
     name: 'Steak',
-    price: '000000',
+    price: 'P80',
     rating: 4.7,
     image: 'https://www.allrecipes.com/thmb/OJ28fIFte6Pyg93ML8IM-APbu1Y=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/AR-14554-sirloin-steak-with-garlic-butter-hero-4x3-d12fa79836754fcf850388e4677bbf55.jpg'
   }
@@ -126,16 +117,20 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.firstLayer}>
+      <Link href="/screen/favorites/myfavorites" asChild>
         <TouchableOpacity style={styles.buttonContainer}>
-          <View style={styles.textContainer}>
-            <Text style={styles.textPrimary}>Golden Harvest Subdi.</Text>
-            <Text style={styles.textSub}>Tuguegarao City, Cagayan</Text>
-          </View>
-          <Entypo name="location" style={styles.buttonIcon}/>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.faveContainer}>
-          <MaterialIcons name="favorite" style={styles.faveIcon}/>
-        </TouchableOpacity>
+            <View style={styles.textContainer}>
+              <Text style={styles.textPrimary}>Golden Harvest Subdi.</Text>
+              <Text style={styles.textSub}>Tuguegarao City, Cagayan</Text>
+            </View>
+            <Entypo name="location" style={styles.buttonIcon}/>
+          </TouchableOpacity>
+      </Link>
+        <Link href="/screen/favorites/myfavorites" >
+          <TouchableOpacity style={styles.faveContainer}>
+            <MaterialIcons name="favorite" style={styles.faveIcon}/>
+          </TouchableOpacity>
+        </Link>
       </View>
 
       <View style={styles.searchContainer}>
@@ -149,17 +144,19 @@ export default function App() {
         <ScrollView
           horizontal
           alwaysBounceHorizontal={false}
-          pagingEnabled
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollView}
         >
-    
           {images.map((image) => (
-            <Pressable key={image.id} style={styles.card}>
-              <Image  source={{ uri: image.uri }} style={styles.image} />
+              <Link 
+              key={image.id} 
+              href={`screen/food_details/${image.id}`} 
+              style={styles.card}
+            >
+              <Image source={{ uri: image.uri }} style={styles.image} />
               <Text style={styles.title}>{image.title}</Text>
               <Text style={styles.ratings}>{image.ratings} <Entypo name="star" size={20} color="yellow" /></Text>
-            </Pressable>
+            </Link>
           ))}
         </ScrollView>
       </View>
@@ -176,6 +173,7 @@ export default function App() {
               onPress={() => setActiveTab(tab)}
               style={[
                 styles.tab,
+                activeTab === tab && styles.activeTab,
               ]}
             >
               <Text style={[
@@ -198,9 +196,9 @@ export default function App() {
                 source={{ uri: item.image }} 
                 style={styles.foodImage} 
               />
-              <View style={styles.foodInfo}>
+              <View href="tabs/food-details.jsx" style={styles.foodInfo}>
                 <Text style={styles.foodName}>{item.name}</Text>
-                <Text style={styles.foodPrice}>$ {item.price}</Text>
+                <Text style={styles.foodPrice}>{item.price}</Text>
                 <View style={styles.ratingContainer}>
                   <Text style={styles.stars}>
                     {'★'.repeat(Math.floor(item.rating))}
@@ -230,11 +228,11 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flex: 1,
-    maxWidth: 300,
+    maxWidth: 'auto',
     paddingVertical: 10,
     paddingHorizontal: 20,
     flexDirection: 'row',
-    gap: 30,
+    gap: 50,
     borderRadius: 8,
     backgroundColor: '#130E40',
     alignItems: 'center',
@@ -280,7 +278,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   tabSection: {
-    flex: 1,
     marginTop: -10
   },
   tabContainer: {
@@ -288,7 +285,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-    height: 100,
+    height: 40,
   },
   tab: {
     paddingHorizontal: 15,
@@ -299,9 +296,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
   },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#130E40',
+  },
   activeTabText: {
+    fontWeight: 'bold',
     color: '#130E40',
-    fontWeight: '500',
   },
   secondLayer: {
     alignItems: 'center',
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: width * 0.6, 
-    marginHorizontal: 10,
+    marginHorizontal: 15,
     backgroundColor: '#fff',
     borderRadius: 10,
     overflow: 'hidden',
@@ -328,7 +329,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
-    padding: 10,
+    padding: 16,
   },
   ratings: {
     paddingHorizontal: 10,

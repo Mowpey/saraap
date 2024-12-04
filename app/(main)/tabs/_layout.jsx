@@ -36,7 +36,7 @@ export default function TabLayout() {
         options={{
           title: '',
           tabBarIcon: ({focused }) => (
-            <FontAwesome name={focused ? 'user' : 'user-outline'}  color={'#130E40'}  size={25}/>
+            <FontAwesome name={focused ? 'user' : 'user-o'}  color={'#130E40'}  size={25}/>
           ),
           headerShown: false,
         }}
