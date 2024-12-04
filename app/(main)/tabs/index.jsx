@@ -117,7 +117,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.firstLayer}>
-      <Link href="/screen/favorites/myfavorites" asChild>
+      <Link href="/screen/address/myaddress" asChild>
         <TouchableOpacity style={styles.buttonContainer}>
             <View style={styles.textContainer}>
               <Text style={styles.textPrimary}>Golden Harvest Subdi.</Text>

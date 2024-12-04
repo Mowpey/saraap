@@ -43,10 +43,12 @@ const MyAddressesScreen = ({ navigation }) => {
       </View>
 
       
-      <TouchableOpacity style={styles.addNewButton}>
-        <Ionicons name="add-circle-outline" size={24} color="#130E40" />
-        <Text style={styles.addNewButtonText}>Add New Address</Text>
-      </TouchableOpacity>
+      <Link href="/screen/address/newaddress">
+        <TouchableOpacity style={styles.addNewButton}>
+          <Ionicons name="add-circle-outline" size={24} color="#130E40" />
+          <Text style={styles.addNewButtonText}>Add New Address</Text>
+        </TouchableOpacity>
+      </Link>
     </View>
   );
 };
@@ -59,7 +61,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     backgroundColor: '#130E40',
-    borderRadius: 20,
+    borderRadius: 5,
     maxWidth: 50,
     padding: 8,
   },
