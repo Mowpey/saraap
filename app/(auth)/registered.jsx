@@ -3,16 +3,14 @@ import { router } from "expo-router";
 import { View, Text, StyleSheet, Image, Pressable } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import completedPicture from "@/assets/images/completed.png";
-import { useFonts } from "expo-font";
+import { useCustomFonts } from "@/utils/fonts";
 
 const RegisteredScreen = () => {
-  const [customFonts] = useFonts({
-    "Poppins-Regular": require("@/assets/fonts/Poppins-Regular.ttf"),
-    "Poppins-Medium": require("@/assets/fonts/Poppins-Medium.ttf"),
-    "Poppins-Bold": require("@/assets/fonts/Poppins-Bold.ttf"),
-    "Poppins-Light": require("@/assets/fonts/Poppins-Light.ttf"),
-    "Poppins-Thin": require("@/assets/fonts/Poppins-Thin.ttf"),
-  });
+  const fontsLoaded = useCustomFonts();
+
+  {
+    !fontsLoaded && null;
+  }
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeAreaContainer}>
