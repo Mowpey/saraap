@@ -7,21 +7,18 @@ import {
   Pressable,
   StyleSheet,
 } from "react-native";
-import { useFonts } from "expo-font";
+import { useCustomFonts } from "@/utils/fonts";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
 import backArrow from "@/assets/images/arrow-back.png";
 import { Dropdown } from "react-native-element-dropdown";
 
 const AddressScreen = () => {
-  const [customFonts] = useFonts({
-    "Poppins-Regular": require("@/assets/fonts/Poppins-Regular.ttf"),
-    "Poppins-Medium": require("@/assets/fonts/Poppins-Medium.ttf"),
-    "Poppins-Bold": require("@/assets/fonts/Poppins-Bold.ttf"),
-    "Poppins-Light": require("@/assets/fonts/Poppins-Light.ttf"),
-    "Poppins-Thin": require("@/assets/fonts/Poppins-Thin.ttf"),
-  });
+  const fontsLoaded = useCustomFonts();
 
+  {
+    !fontsLoaded && null;
+  }
   const [phoneNumber, setPhoneNumber] = useState("");
   const [address, setAddress] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
