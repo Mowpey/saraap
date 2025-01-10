@@ -7,25 +7,40 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
+import { 
+  signInWithEmailAndPassword, 
+  GoogleAuthProvider, 
+  signInWithPopup,
+  FacebookAuthProvider,
+  getAuth 
+} from 'firebase/auth';
 import googleLogo from "@/assets/images/google.png";
 import facebookLogo from "@/assets/images/facebook.png";
-import { useCustomFonts } from "@/utils/fonts";
+import { useFonts } from "expo-font";
+
+const auth = getAuth();
+const googleProvider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
 
 const SignInScreen = () => {
-  const fontsLoaded = useCustomFonts();
-
-  {
-    !fontsLoaded && null;
-  }
-
+  const [customFonts] = useFonts({
+    "Poppins-Regular": require("@/assets/fonts/Poppins-Regular.ttf"),
+    "Poppins-Medium": require("@/assets/fonts/Poppins-Medium.ttf"),
+    "Poppins-Bold": require("@/assets/fonts/Poppins-Bold.ttf"),
+    "Poppins-Light": require("@/assets/fonts/Poppins-Light.ttf"),
+    "Poppins-Thin": require("@/assets/fonts/Poppins-Thin.ttf"),
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailIsFocused, setEmailToFocused] = useState(false);
   const [passwordIsFocused, setPasswordToFocused] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("Incorrect email or password. Please try again.");
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = (inputText) => {
     const emailRegex =
@@ -33,11 +48,49 @@ const SignInScreen = () => {
     return emailRegex.test(inputText);
   };
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     const isValid = validateEmail(email);
-    if (isValid) {
+    if (!isValid) {
+      setErrorMessage("Please enter a valid email address");
+      setShowError(true);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      setShowError(false);
+      router.push("/(auth)/registered");
+    } catch (error) {
+      setErrorMessage(
+        error.code === 'auth/wrong-password' 
+          ? 'Incorrect password. Please try again.' 
+          : error.code === 'auth/user-not-found'
+          ? 'No account found with this email.'
+          : 'An error occurred. Please try again.'
+      );
+      setShowError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
       router.push("/tabs/");
-    } else {
+    } catch (error) {
+      setErrorMessage("Google sign-in failed. Please try again.");
+      setShowError(true);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, facebookProvider);
+      router.push("/tabs/");
+    } catch (error) {
+      setErrorMessage("Facebook sign-in failed. Please try again.");
       setShowError(true);
     }
   };
@@ -45,17 +98,13 @@ const SignInScreen = () => {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeAreaContainer}>
-        {/*  Sign in Title and description */}
         <View style={styles.upperContainer}>
           <Text style={styles.signInStyle}>Sign In</Text>
           <Text style={styles.signInDesc}>Find your best ever meal</Text>
         </View>
-        {/* Sign in forms and buttons */}
         <View style={styles.FormContainerStyle}>
           {showError && (
-            <Text style={styles.errorText}>
-              Incorrect email or password. Please try again.
-            </Text>
+            <Text style={styles.errorText}>{errorMessage}</Text>
           )}
           <Text style={styles.formTitleStyle}>Email Address</Text>
           <TextInput
@@ -91,26 +140,37 @@ const SignInScreen = () => {
             onBlur={() => setPasswordToFocused(false)}
           />
           <View style={styles.buttonContainer}>
-            <Pressable style={styles.signInButtonStyle} onPress={handleSignIn}>
-              <Text style={styles.signInTextStyle}>Sign In</Text>
+            <Pressable 
+              style={[styles.signInButtonStyle, isLoading && styles.buttonDisabled]} 
+              onPress={handleSignIn}
+              disabled={isLoading}
+            >
+              <Text style={styles.signInTextStyle}>
+                {isLoading ? "Signing in..." : "Sign In"}
+              </Text>
             </Pressable>
             <Link href="/signin" style={styles.forgotPasswordStyle}>
               Forgot Password
             </Link>
           </View>
 
-          {/* Alternative Sign in Option */}
           <View style={styles.alternativeSignInStyle}>
             <Text style={styles.continueWithStyle}>- OR Continue with -</Text>
             <View style={styles.alternativeAccountStyle}>
-              <TouchableOpacity style={styles.logoStyle}>
+              <TouchableOpacity 
+                style={styles.logoStyle}
+                onPress={handleGoogleSignIn}
+              >
                 <Image
                   source={googleLogo}
                   style={{ width: 35, height: 35 }}
                 ></Image>
                 <Text style={styles.altAccountText}> Google </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.logoStyle}>
+              <TouchableOpacity 
+                style={styles.logoStyle}
+                onPress={handleFacebookSignIn}
+              >
                 <Image
                   source={facebookLogo}
                   style={{ width: 35, height: 35 }}
@@ -243,6 +303,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 10,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+    backgroundColor: "#666",
   },
 });
 
