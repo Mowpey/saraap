@@ -60,7 +60,7 @@ const SignInScreen = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       setShowError(false);
-      router.push("/(auth)/registered");
+      router.push("/tabs/");
     } catch (error) {
       setErrorMessage(
         error.code === 'auth/wrong-password' 
