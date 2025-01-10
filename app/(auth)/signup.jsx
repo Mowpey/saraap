@@ -10,16 +10,14 @@ import {
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useCustomFonts } from "@/utils/fonts";
 import { Link, router } from "expo-router";
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import backArrow from "@/assets/images/arrow-back.png";
-import profilePicture from "@/assets/images/profile.png";
-import * as ImagePicker from "expo-image-picker";
+
+const auth = getAuth();
 
 const SignUpScreen = () => {
   const fontsLoaded = useCustomFonts();
-
-  {
-    !fontsLoaded && null;
-  }
+  if (!fontsLoaded) return null;
 
   const [fullName, setFullName] = useState("");
   const [emailAddress, setEmailAddress] = useState("");
@@ -27,69 +25,67 @@ const SignUpScreen = () => {
   const [fullNameIsFocused, setFullNameToFocused] = useState(false);
   const [emailIsFocused, setEmailToFocused] = useState(false);
   const [passwordIsFocused, setPasswordToFocused] = useState(false);
-  const [selectedProfilePicture, setSelectedProfilePicture] = useState(null);
   const [emailError, setEmailError] = useState(false);
   const [nameEmpty, setNameEmpty] = useState(false);
   const [passwordEmpty, setPasswordEmpty] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const exampleEmails = [
-    "markangelo@gmail.com",
-    "ken@gmail.com",
-    "louie@gmail.com",
-  ];
-
-  const formValidator = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+  const validateForm = () => {
+    let isValid = true;
     setNameEmpty(false);
     setPasswordEmpty(false);
+    setEmailError(false);
+    setErrorMessage("");
 
     if (fullName.trim() === "") {
       setNameEmpty(true);
-      return;
+      isValid = false;
     }
+
     if (password.trim() === "") {
       setPasswordEmpty(true);
-      return;
+      isValid = false;
+    } else if (password.length < 6) {
+      setPasswordEmpty(true);
+      setErrorMessage("Password must be at least 6 characters long");
+      isValid = false;
     }
 
-    if (emailAddress == "") {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (emailAddress === "" || !emailRegex.test(emailAddress)) {
       setEmailError(true);
-    } else if (exampleEmails.includes(emailAddress)) {
-      setEmailError(true);
-    } else if (!emailRegex.test(emailAddress)) {
-      setEmailError(true);
-    } else {
-      setEmailError(false);
-      router.push("/address");
+      isValid = false;
     }
+
+    return isValid;
   };
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
+  const handleSignUp = async () => {
+    if (!validateForm()) return;
 
-    if (!result.canceled) {
-      setSelectedProfilePicture(result.assets[0].uri);
-    } else {
-      alert("You did not select any image.");
+    setIsLoading(true);
+    try {
+      await createUserWithEmailAndPassword(auth, emailAddress, password);
+      router.push("/address");
+    } catch (error) {
+      setErrorMessage(
+        error.code === 'auth/email-already-in-use'
+          ? 'This email is already registered. Please use a different email.'
+          : 'An error occurred during signup. Please try again.'
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeAreaContainer}>
-        {/*  Sign Up Icon and Text Description */}
         <View style={styles.upperSignUpContainer}>
           <View>
             <Link href={"/signin"}>
-              <Image
-                source={backArrow}
-                style={{ width: 35, height: 35 }}
-              ></Image>
+              <Image source={backArrow} style={{ width: 35, height: 35 }} />
             </Link>
           </View>
           <View style={styles.signUpTextContainer}>
@@ -97,22 +93,12 @@ const SignUpScreen = () => {
             <Text style={styles.signUpTextDescStyle}>Register and eat</Text>
           </View>
         </View>
-        {/*  Sign Up Icon and Text Description  END*/}
-
-        <View style={styles.profilePictureContainer}>
-          <Pressable onPress={pickImage}>
-            <Image
-              source={
-                selectedProfilePicture
-                  ? { uri: selectedProfilePicture }
-                  : profilePicture
-              }
-              style={{ width: 120, height: 120 }}
-            ></Image>
-          </Pressable>
-        </View>
 
         <View>
+          {errorMessage !== "" && (
+            <Text style={styles.formErrorStyle}>{errorMessage}</Text>
+          )}
+
           <Text style={styles.formTitleStyle}>Full Name</Text>
           <TextInput
             onChangeText={setFullName}
@@ -137,9 +123,7 @@ const SignUpScreen = () => {
             onBlur={() => setFullNameToFocused(false)}
           />
           {nameEmpty && (
-            <Text style={styles.formErrorStyle}>
-              Name cannot be left empty!
-            </Text>
+            <Text style={styles.formErrorStyle}>Name cannot be left empty!</Text>
           )}
 
           <Text style={styles.formTitleStyle}>Email Address</Text>
@@ -168,7 +152,7 @@ const SignUpScreen = () => {
           />
           {emailError && (
             <Text style={styles.formErrorStyle}>
-              The email address is invalid, empty, or already in use.
+              Please enter a valid email address.
             </Text>
           )}
 
@@ -196,15 +180,20 @@ const SignUpScreen = () => {
             onFocus={() => setPasswordToFocused(true)}
             onBlur={() => setPasswordToFocused(false)}
           />
-
           {passwordEmpty && (
             <Text style={styles.formErrorStyle}>
-              Password cannot be left empty!
+              {errorMessage || "Password cannot be left empty!"}
             </Text>
           )}
 
-          <Pressable onPress={formValidator} style={styles.continueButtonStyle}>
-            <Text style={styles.continueTextStyle}>Continue</Text>
+          <Pressable 
+            onPress={handleSignUp} 
+            style={[styles.continueButtonStyle, isLoading && styles.buttonDisabled]}
+            disabled={isLoading}
+          >
+            <Text style={styles.continueTextStyle}>
+              {isLoading ? "Creating Account..." : "Continue"}
+            </Text>
           </Pressable>
 
           <View style={styles.haveAccountContainer}>
@@ -245,15 +234,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "gray",
   },
-  profilePictureContainer: {
-    alignItems: "center",
-    marginVertical: 30,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    overflow: "hidden",
-    alignSelf: "center",
-  },
   formTitleStyle: {
     fontFamily: "Poppins-Regular",
     fontSize: 20,
@@ -272,6 +252,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: "#020452",
     marginVertical: 10,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+    backgroundColor: "#666",
   },
   continueTextStyle: {
     color: "white",
