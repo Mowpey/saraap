@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import React from "react";
-import { Link, RelativePathString, router } from "expo-router";
+import React, { useEffect } from "react";
+import { Link, RelativePathString } from "expo-router";
 import "@/global.css";
 import {
   Table,
@@ -26,11 +26,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SquareArrowOutUpRight } from "lucide-react";
+import {
+  StoreData,
+  getStores,
+  updateStoreStatus,
+} from "@/services/store/crud_store";
+import AddStoreDialog from "@/services/store/add_dialog.tsx";
+import EditStoreDialog from "@/services/store/edit_dialog";
+import DeleteStoreDialog from "@/services/store/delete_dialog";
 
 type Checked = boolean;
 
 type Store = {
-  id: number;
+  id: string;
   storeName: string;
   productQuantity: number;
   status: boolean;
@@ -38,24 +46,58 @@ type Store = {
 };
 
 const AdminTable = () => {
-  const [stores, setStores] = React.useState<Store[]>([
-    {
-      id: 1,
-      storeName: "Jollibee",
-      productQuantity: 6,
-      status: false,
-      actionUrl: "/tabs",
-    },
-  ]);
+  const [stores, setStores] = React.useState<Store[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
+    "asc"
+  );
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [selectedStore, setSelectedStore] = React.useState<StoreData | null>(
+    null
+  );
 
-  const [position, setPosition] = React.useState("asc");
+  const handleStatusChange = async (id: string, checked: boolean) => {
+    try {
+      await updateStoreStatus(id, checked);
+      setStores(
+        stores.map((store) =>
+          store.id === id ? { ...store, status: checked } : store
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update store status:", error);
+    }
+  };
 
-  const handleStatusChange = (id: number, checked: boolean) => {
-    setStores(
-      stores.map((store) =>
-        store.id === id ? { ...store, status: checked } : store
-      )
-    );
+  const fetchStores = async (direction: "asc" | "desc") => {
+    try {
+      setIsLoading(true);
+      const storesData = await getStores(direction);
+      setStores(storesData);
+    } catch (error) {
+      console.error("Error fetching stores:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchStores(sortDirection);
+  }, [sortDirection]);
+
+  const handleEdit = (store: StoreData) => {
+    setSelectedStore(store);
+    setIsEditDialogOpen(true);
+  };
+  const handleDelete = (store: StoreData) => {
+    setSelectedStore(store);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleSortChange = (newDirection: string) => {
+    setSortDirection(newDirection as "asc" | "desc");
   };
 
   return (
@@ -71,8 +113,8 @@ const AdminTable = () => {
                 <DropdownMenuLabel>Order By</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup
-                  value={position}
-                  onValueChange={setPosition}
+                  value={sortDirection}
+                  onValueChange={handleSortChange}
                 >
                   <DropdownMenuRadioItem value="asc">
                     Ascending
@@ -85,17 +127,37 @@ const AdminTable = () => {
             </DropdownMenu>
 
             <div className="space-x-1">
-              <Button variant="outline" className="w-12 p-2 text-xs">
-                Edit
-              </Button>
-              <Button variant="outline" className="w-12 p-2 text-xs">
-                Delete
-              </Button>
-              <Button variant="outline" className="w-12 p-2 text-xs">
+              <Button
+                className="w-12 p-2 text-xs"
+                onClick={() => setIsAddDialogOpen(true)}
+              >
                 Add
               </Button>
             </div>
           </div>
+          <AddStoreDialog
+            isOpen={isAddDialogOpen}
+            onClose={() => setIsAddDialogOpen(false)}
+            onStoreAdded={() => fetchStores(sortDirection)}
+          />
+          <EditStoreDialog
+            isOpen={isEditDialogOpen}
+            onClose={() => {
+              setIsEditDialogOpen(false);
+              setSelectedStore(null);
+            }}
+            onStoreEdited={() => fetchStores(sortDirection)}
+            store={selectedStore}
+          />
+          <DeleteStoreDialog
+            isOpen={isDeleteDialogOpen}
+            onClose={() => {
+              setIsDeleteDialogOpen(false);
+              setSelectedStore(null);
+            }}
+            onStoreDeleted={() => fetchStores(sortDirection)}
+            store={selectedStore}
+          />
 
           <Table>
             <TableHeader>
@@ -103,7 +165,7 @@ const AdminTable = () => {
                 <TableHead className="w-[65px]">STORE</TableHead>
                 <TableHead className="text-center">PRODUCTS</TableHead>
                 <TableHead>STATUS</TableHead>
-                <TableHead>ACTION</TableHead>
+                <TableHead className="text-center">ACTION</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -127,7 +189,21 @@ const AdminTable = () => {
                       />
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      className="w-12 p-2 text-xs"
+                      onClick={() => handleEdit(store)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="w-12 p-2 text-xs font-bold"
+                      onClick={() => handleDelete(store)}
+                    >
+                      Delete
+                    </Button>
                     <Button asChild variant={"secondary"}>
                       <Link href={store.actionUrl as RelativePathString}>
                         <SquareArrowOutUpRight />
