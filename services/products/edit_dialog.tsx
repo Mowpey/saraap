@@ -12,13 +12,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../FirebaseConfig";
-import { Product } from "./crud_product.ts"; // Adjust import based on your path
+import { Product } from "./crud_product.ts";
 
 type EditProductDialogProps = {
   isOpen: boolean;
   onClose: () => void;
   onProductEdited: () => void;
   product: Product | null;
+  storeId: string;  // Add storeId prop
+  storeName: string;  // Add storeName for display purposes
 };
 
 const EditProductDialog: React.FC<EditProductDialogProps> = ({
@@ -26,6 +28,8 @@ const EditProductDialog: React.FC<EditProductDialogProps> = ({
   onClose,
   onProductEdited,
   product,
+  storeId,
+  storeName,
 }) => {
   const [formData, setFormData] = useState({
     productName: "",
@@ -52,12 +56,13 @@ const EditProductDialog: React.FC<EditProductDialogProps> = ({
     setIsLoading(true);
 
     try {
-      const productRef = doc(db, "products", product.id); // Update collection name to "products"
+      const productRef = doc(db, "products", product.id);
       await updateDoc(productRef, {
         productName: formData.productName,
         category: formData.category,
         price: parseFloat(formData.price),
         img: formData.img,
+        storeId: storeId,  // Ensure storeId is included in update
       });
       onProductEdited();
       onClose();
@@ -81,7 +86,9 @@ const EditProductDialog: React.FC<EditProductDialogProps> = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Product</DialogTitle>
-          <DialogDescription>Update the product information.</DialogDescription>
+          <DialogDescription>
+            Update the product information for {storeName}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="py-2">

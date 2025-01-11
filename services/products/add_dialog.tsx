@@ -10,19 +10,23 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "../FirebaseConfig";
 
 type AddProductDialogProps = {
   isOpen: boolean;
   onClose: () => void;
   onProductAdded: () => void;
+  storeId: string; // Changed from storeName to storeId
+  storeName: string; // Added for display purposes
 };
 
 const AddProductDialog: React.FC<AddProductDialogProps> = ({
   isOpen,
   onClose,
   onProductAdded,
+  storeId,
+  storeName,
 }) => {
   const [formData, setFormData] = useState({
     productName: "",
@@ -43,9 +47,20 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
         category: formData.category,
         price: parseFloat(formData.price),
         img: formData.img,
+        storeId: storeId, // Use storeId to relate the product to a store
+        status: true,
       };
 
+      // Add the new product to the "products" collection
       await addDoc(productsRef, newProduct);
+
+      // Increment the store's product quantity by 1
+      const storeRef = doc(db, "stores", storeId);
+      await updateDoc(storeRef, {
+        productQuantity: increment(1), // Increment productQuantity by 1
+      });
+      
+      // Call callback and reset form state
       onProductAdded();
       onClose();
       setFormData({ productName: "", category: "", price: "", img: "" });
@@ -70,7 +85,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Add New Product</DialogTitle>
           <DialogDescription>
-            Fill out the form to add a new product.
+            Fill out the form to add a new product to {storeName}.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -106,7 +121,6 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
               required
             />
           </div>
-
           <div className="py-2">
             <Label htmlFor="img">Product Image URL</Label>
             <Input
