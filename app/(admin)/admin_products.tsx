@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import React, { useEffect } from "react";
-import { Link, RelativePathString } from "expo-router";
+import { Link } from "expo-router";
 import "@/global.css";
 import {
   Table,
@@ -27,72 +27,71 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SquareArrowOutUpRight } from "lucide-react";
 import {
-  StoreData,
-  getStores,
-  updateStoreStatus,
-} from "@/services/store/crud_store";
-import AddStoreDialog from "@/services/store/add_dialog.tsx";
-import EditStoreDialog from "@/services/store/edit_dialog";
-import DeleteStoreDialog from "@/services/store/delete_dialog";
+  updateProduct,
+  addProduct,
+  deleteProduct,
+  updateProductStatus,
+} from "@/services/products/crud_product";
+import AddProductDialog from "@/services/products/add_dialog.tsx";
+import EditProductDialog from "@/services/products/edit_dialog";
+import DeleteProductDialog from "@/services/products/delete_dialog";
+import { getProducts } from "@/services/products/crud_product";
 
-type Checked = boolean;
-
-type Store = {
+type Product = {
   id: string;
-  storeName: string;
-  productQuantity: number;
+  productName: string;
+  category: string;
+  price: number;
   status: boolean;
+  img: string;
   actionUrl: string;
 };
 
 const AdminTable = () => {
-  const [stores, setStores] = React.useState<Store[]>([]);
+  const [products, setProducts] = React.useState<Product[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
-    "asc"
-  );
+  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("asc");
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-  const [selectedStore, setSelectedStore] = React.useState<StoreData | null>(
-    null
-  );
+  const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
 
   const handleStatusChange = async (id: string, checked: boolean) => {
     try {
-      await updateStoreStatus(id, checked);
-      setStores(
-        stores.map((store) =>
-          store.id === id ? { ...store, status: checked } : store
+      await updateProductStatus(id, checked);
+      setProducts(
+        products.map((item) =>
+          item.id === id ? { ...item, status: checked } : item
         )
       );
     } catch (error) {
-      console.error("Failed to update store status:", error);
+      console.error("Failed to update product status:", error);
     }
   };
 
-  const fetchStores = async (direction: "asc" | "desc") => {
+  const fetchProducts = async (direction: "asc" | "desc") => {
     try {
       setIsLoading(true);
-      const storesData = await getStores(direction);
-      setStores(storesData);
+      const productsData = await getProducts(direction);
+      setProducts(productsData);
     } catch (error) {
-      console.error("Error fetching stores:", error);
+      console.error("Error fetching products:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   React.useEffect(() => {
-    fetchStores(sortDirection);
+    fetchProducts(sortDirection);
   }, [sortDirection]);
 
-  const handleEdit = (store: StoreData) => {
-    setSelectedStore(store);
+  const handleEdit = (item: Product) => {
+    setSelectedProduct(item);
     setIsEditDialogOpen(true);
   };
-  const handleDelete = (store: StoreData) => {
-    setSelectedStore(store);
+
+  const handleDelete = (item: Product) => {
+    setSelectedProduct(item);
     setIsDeleteDialogOpen(true);
   };
 
@@ -116,12 +115,8 @@ const AdminTable = () => {
                   value={sortDirection}
                   onValueChange={handleSortChange}
                 >
-                  <DropdownMenuRadioItem value="asc">
-                    Ascending
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="desc">
-                    Descending
-                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="asc">Ascending</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="desc">Descending</DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -135,81 +130,76 @@ const AdminTable = () => {
               </Button>
             </div>
           </div>
-          <AddStoreDialog
+
+          <AddProductDialog
             isOpen={isAddDialogOpen}
             onClose={() => setIsAddDialogOpen(false)}
-            onStoreAdded={() => fetchStores(sortDirection)}
+            onProductAdded={() => fetchProducts(sortDirection)}
           />
-          <EditStoreDialog
+          <EditProductDialog
             isOpen={isEditDialogOpen}
             onClose={() => {
               setIsEditDialogOpen(false);
-              setSelectedStore(null);
+              setSelectedProduct(null);
             }}
-            onStoreEdited={() => fetchStores(sortDirection)}
-            store={selectedStore}
+            onProductEdited={() => fetchProducts(sortDirection)}
+            product={selectedProduct}
           />
-          <DeleteStoreDialog
+          <DeleteProductDialog
             isOpen={isDeleteDialogOpen}
             onClose={() => {
               setIsDeleteDialogOpen(false);
-              setSelectedStore(null);
+              setSelectedProduct(null);
             }}
-            onStoreDeleted={() => fetchStores(sortDirection)}
-            store={selectedStore}
+            onProductDeleted={() => fetchProducts(sortDirection)}
+            product={selectedProduct}
           />
 
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[65px]">STORE</TableHead>
-                <TableHead className="text-center">PRODUCTS</TableHead>
-                <TableHead>STATUS</TableHead>
+                <TableHead className="w-[65px]">PRODUCT</TableHead>
+                <TableHead className="text-center">CATEGORY</TableHead>
+                <TableHead>PRICE</TableHead>
+                <TableHead>IMAGE</TableHead>
                 <TableHead className="text-center">ACTION</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {stores.map((store) => (
-                <TableRow key={store.id}>
-                  <TableCell className="font-medium">
-                    {store.storeName}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {store.productQuantity}
-                  </TableCell>
+              {products.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.productName}</TableCell>
+                  <TableCell className="text-center">{item.category}</TableCell>
+                  <TableCell>₱{item.price.toFixed(0)}</TableCell>
                   <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id={`store-${store.id}`}
-                        checked={store.status}
-                        onCheckedChange={(checked) =>
-                          handleStatusChange(store.id, checked)
-                        }
-                        className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+                    {item.img && (
+                      <img
+                        src={item.img}
+                        alt={item.productName}
+                        className="w-12 h-12 object-cover"
                       />
-                    </div>
+                    )}
                   </TableCell>
                   <TableCell className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       className="w-12 p-2 text-xs"
-                      onClick={() => handleEdit(store)}
+                      onClick={() => handleEdit(item)} // Corrected to 'item'
                     >
                       Edit
                     </Button>
                     <Button
                       variant="destructive"
                       className="w-12 p-2 text-xs font-bold"
-                      onClick={() => handleDelete(store)}
+                      onClick={() => handleDelete(item)} // Corrected to 'item'
                     >
                       Delete
                     </Button>
                     <Button asChild variant={"secondary"}>
-                      <Link href={store.actionUrl as RelativePathString}>
-                        <SquareArrowOutUpRight />
-                      </Link>
+                      {/* <Link href={item.actionUrl as string}>  */}
+                        {/* <SquareArrowOutUpRight /> */}
+                      {/* </Link> */}
                     </Button>
-                    
                   </TableCell>
                 </TableRow>
               ))}
