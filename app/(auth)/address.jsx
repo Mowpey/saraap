@@ -6,22 +6,41 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { useCustomFonts } from "@/utils/fonts";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
 import backArrow from "@/assets/images/arrow-back.png";
 import { Dropdown } from "react-native-element-dropdown";
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+
+// Your Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyD3FNa4HBT7WeBJ6mZuoYkkwB6BOwkofRU",
+  authDomain: "sample-db-f2f07.firebaseapp.com",
+  projectId: "sample-db-f2f07",
+  storageBucket: "sample-db-f2f07.firebasestorage.app",
+  messagingSenderId: "73209412204",
+  appId: "1:73209412204:web:d69248956e50a446143649",
+  measurementId: "G-JYLBYNMHB1",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const AddressScreen = () => {
   const fontsLoaded = useCustomFonts();
-
   {
     !fontsLoaded && null;
   }
+
   const [phoneNumber, setPhoneNumber] = useState("");
   const [address, setAddress] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [phoneNumberIsFocused, setPhoneNumberToFocused] = useState(false);
   const [addressIsFocused, setAddressToFocused] = useState(false);
@@ -30,6 +49,38 @@ const AddressScreen = () => {
 
   const [city, setCity] = useState(null);
   const cities = [{ label: "Tuguegarao City", value: "Tuguegarao City" }];
+
+  const handleSignUp = async () => {
+    if (!phoneNumber || !address || !houseNumber || !city) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Add address data to Firestore
+      const docRef = await addDoc(collection(db, "addresses"), {
+        phoneNumber,
+        address,
+        houseNumber,
+        city,
+        createdAt: new Date().toISOString(),
+      });
+
+      console.log("Document written with ID: ", docRef.id);
+      Alert.alert("Success", "Address saved successfully!", [
+        {
+          text: "OK",
+          onPress: () => router.push("/registered"),
+        },
+      ]);
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      Alert.alert("Error", "Failed to save address. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaProvider>
@@ -114,10 +165,16 @@ const AddressScreen = () => {
           />
 
           <Pressable
-            style={styles.signUpNowStyle}
-            onPress={() => router.push("/registered")}
+            style={[
+              styles.signUpNowStyle,
+              isLoading && styles.disabledButton,
+            ]}
+            onPress={handleSignUp}
+            disabled={isLoading}
           >
-            <Text style={styles.signUpNowTextStyle}>Sign Up Now</Text>
+            <Text style={styles.signUpNowTextStyle}>
+              {isLoading ? "Saving..." : "Sign Up Now"}
+            </Text>
           </Pressable>
 
           <View style={styles.haveAccountContainer}>
@@ -205,6 +262,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     outlineStyle: "none",
     borderColor: "#7aeb34",
+  },
+  disabledButton: {
+    backgroundColor: "#cccccc",
+  },
+  disabledButton: {
+    backgroundColor: "#cccccc",
   },
 });
 

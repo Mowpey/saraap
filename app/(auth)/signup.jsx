@@ -67,7 +67,7 @@ const SignUpScreen = () => {
     setIsLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, emailAddress, password);
-      router.push("/signin");
+      router.push("/address");
     } catch (error) {
       setErrorMessage(
         error.code === 'auth/email-already-in-use'
