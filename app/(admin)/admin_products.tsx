@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import React, { useEffect } from "react";
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import "@/global.css";
 import {
   Table,
@@ -44,17 +44,20 @@ type Product = {
   price: number;
   status: boolean;
   img: string;
-  actionUrl: string;
 };
 
 const AdminTable = () => {
   const [products, setProducts] = React.useState<Product[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("asc");
+  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
+    "asc"
+  );
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-  const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(
+    null
+  );
 
   const handleStatusChange = async (id: string, checked: boolean) => {
     try {
@@ -115,8 +118,12 @@ const AdminTable = () => {
                   value={sortDirection}
                   onValueChange={handleSortChange}
                 >
-                  <DropdownMenuRadioItem value="asc">Ascending</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="desc">Descending</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="asc">
+                    Ascending
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="desc">
+                    Descending
+                  </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -168,7 +175,9 @@ const AdminTable = () => {
             <TableBody>
               {products.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.productName}</TableCell>
+                  <TableCell className="font-medium">
+                    {item.productName}
+                  </TableCell>
                   <TableCell className="text-center">{item.category}</TableCell>
                   <TableCell>₱{item.price.toFixed(0)}</TableCell>
                   <TableCell>
@@ -197,7 +206,7 @@ const AdminTable = () => {
                     </Button>
                     <Button asChild variant={"secondary"}>
                       {/* <Link href={item.actionUrl as string}>  */}
-                        {/* <SquareArrowOutUpRight /> */}
+                      {/* <SquareArrowOutUpRight /> */}
                       {/* </Link> */}
                     </Button>
                   </TableCell>

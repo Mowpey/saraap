@@ -28,7 +28,6 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
     productName: "",
     category: "",
     price: "",
-    actionUrl: "",
     img: "",
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -43,14 +42,13 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
         productName: formData.productName,
         category: formData.category,
         price: parseFloat(formData.price),
-        actionUrl: formData.actionUrl,
         img: formData.img,
       };
 
       await addDoc(productsRef, newProduct);
       onProductAdded();
       onClose();
-      setFormData({ productName: "", category: "", price: "", actionUrl: "", img: "" });
+      setFormData({ productName: "", category: "", price: "", img: "" });
     } catch (error) {
       console.error("Error adding product:", error);
     } finally {
@@ -108,16 +106,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({
               required
             />
           </div>
-          <div className="py-2">
-            <Label htmlFor="actionUrl">Action URL</Label>
-            <Input
-              id="actionUrl"
-              name="actionUrl"
-              value={formData.actionUrl}
-              onChange={handleChange}
-              required
-            />
-          </div>
+
           <div className="py-2">
             <Label htmlFor="img">Product Image URL</Label>
             <Input

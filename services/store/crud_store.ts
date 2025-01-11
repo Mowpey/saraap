@@ -11,6 +11,8 @@ import {
   where,
 } from "firebase/firestore";
 
+import { createSlug } from "@/lib/slugify";
+
 export type StoreData = {
   id: string;
   storeName: string;
@@ -30,7 +32,7 @@ export const getStores = async (sortDirection: "asc" | "desc" = "asc") => {
       storeName: doc.data().storeName,
       productQuantity: doc.data().productQuantity,
       status: doc.data().status,
-      actionUrl: doc.data().actionUrl.trim(),
+      actionUrl: "/admin_products/",
     })) as StoreData[];
   } catch (error) {
     console.error("Error getting stores:", error);
