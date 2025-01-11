@@ -18,7 +18,6 @@ export type Product = {
   price: number;
   status: boolean;
   img: string;
-  actionUrl: string;
 };
 
 // Reference to the "products" collection in Firestore
@@ -36,7 +35,6 @@ export const getProducts = async (sortDirection: "asc" | "desc" = "asc") => {
       price: doc.data().price,
       status: doc.data().status,
       img: doc.data().img || "", // Optional image field
-      actionUrl: doc.data().actionUrl.trim(),
     })) as Product[];
   } catch (error) {
     console.error("Error getting products:", error);
@@ -64,7 +62,6 @@ export const addProduct = async (product: Product) => {
       price: product.price,
       status: product.status,
       img: product.img,
-      actionUrl: product.actionUrl,
     });
     console.log("Product added with ID:", newProductRef.id);
     return newProductRef.id;
@@ -84,7 +81,6 @@ export const updateProduct = async (id: string, product: Product) => {
       price: product.price,
       status: product.status,
       img: product.img,
-      actionUrl: product.actionUrl,
     });
     console.log("Product updated with ID:", id);
   } catch (error) {

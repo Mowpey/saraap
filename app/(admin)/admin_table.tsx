@@ -3,6 +3,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import React, { useEffect } from "react";
 import { Link, RelativePathString } from "expo-router";
 import "@/global.css";
+import { useRouter } from "expo-router";
 import {
   Table,
   TableBody,
@@ -46,6 +47,7 @@ type Store = {
 };
 
 const AdminTable = () => {
+  const router = useRouter();
   const [stores, setStores] = React.useState<Store[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
@@ -100,6 +102,12 @@ const AdminTable = () => {
     setSortDirection(newDirection as "asc" | "desc");
   };
 
+  const handleStoreClick = (storeName: string) => {
+    router.push({
+      pathname: "/admin_products" as RelativePathString,
+      params: { storeName },
+    });
+  };
   return (
     <SafeAreaProvider>
       <SafeAreaView>
@@ -204,12 +212,12 @@ const AdminTable = () => {
                     >
                       Delete
                     </Button>
-                    <Button asChild variant={"secondary"}>
-                      <Link href={store.actionUrl as RelativePathString}>
-                        <SquareArrowOutUpRight />
-                      </Link>
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleStoreClick(store.storeName)}
+                    >
+                      <SquareArrowOutUpRight />
                     </Button>
-                    
                   </TableCell>
                 </TableRow>
               ))}

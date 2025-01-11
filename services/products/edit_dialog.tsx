@@ -31,7 +31,6 @@ const EditProductDialog: React.FC<EditProductDialogProps> = ({
     productName: "",
     category: "",
     price: "",
-    actionUrl: "",
     img: "",
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +41,6 @@ const EditProductDialog: React.FC<EditProductDialogProps> = ({
         productName: product.productName,
         category: product.category,
         price: product.price.toString(),
-        actionUrl: product.actionUrl,
         img: product.img,
       });
     }
@@ -59,7 +57,6 @@ const EditProductDialog: React.FC<EditProductDialogProps> = ({
         productName: formData.productName,
         category: formData.category,
         price: parseFloat(formData.price),
-        actionUrl: formData.actionUrl,
         img: formData.img,
       });
       onProductEdited();
@@ -127,16 +124,7 @@ const EditProductDialog: React.FC<EditProductDialogProps> = ({
               onChange={handleChange}
             />
           </div>
-          <div className="py-2">
-            <Label htmlFor="actionUrl">Action URL</Label>
-            <Input
-              id="actionUrl"
-              name="actionUrl"
-              value={formData.actionUrl}
-              onChange={handleChange}
-              required
-            />
-          </div>
+
           <DialogFooter className="py-2">
             <Button type="submit" disabled={isLoading}>
               {isLoading ? "Saving..." : "Save Changes"}
