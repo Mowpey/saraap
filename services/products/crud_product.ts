@@ -8,9 +8,9 @@ import {
   doc,
   query,
   orderBy,
+  where,
 } from "firebase/firestore";
 
-// Define the Product type
 export type Product = {
   id: string;
   productName: string;
@@ -18,15 +18,21 @@ export type Product = {
   price: number;
   status: boolean;
   img: string;
+  storeId: string; // Changed from storeName to storeId
 };
 
-// Reference to the "products" collection in Firestore
 const productsRef = collection(db, "products");
 
-// Fetch products with sorting functionality
-export const getProducts = async (sortDirection: "asc" | "desc" = "asc") => {
+export const getProducts = async (
+  storeId: string, // Changed parameter from storeName to storeId
+  sortDirection: "asc" | "desc" = "asc"
+) => {
   try {
-    const q = query(productsRef, orderBy("productName", sortDirection)); // Sorting by productName
+    const q = query(
+      productsRef,
+      where("storeId", "==", storeId), // Changed filter field
+      orderBy("productName", sortDirection)
+    );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -34,7 +40,8 @@ export const getProducts = async (sortDirection: "asc" | "desc" = "asc") => {
       category: doc.data().category,
       price: doc.data().price,
       status: doc.data().status,
-      img: doc.data().img || "", // Optional image field
+      img: doc.data().img || "",
+      storeId: doc.data().storeId, // Changed field
     })) as Product[];
   } catch (error) {
     console.error("Error getting products:", error);
@@ -42,7 +49,6 @@ export const getProducts = async (sortDirection: "asc" | "desc" = "asc") => {
   }
 };
 
-// Update the product's status (assuming you have a status field for each product)
 export const updateProductStatus = async (id: string, status: boolean) => {
   try {
     const productRef = doc(productsRef, id);
@@ -53,7 +59,6 @@ export const updateProductStatus = async (id: string, status: boolean) => {
   }
 };
 
-// Add a new product to the Firestore collection
 export const addProduct = async (product: Product) => {
   try {
     const newProductRef = await addDoc(productsRef, {
@@ -62,6 +67,7 @@ export const addProduct = async (product: Product) => {
       price: product.price,
       status: product.status,
       img: product.img,
+      storeId: product.storeId, // Changed from storeName to storeId
     });
     console.log("Product added with ID:", newProductRef.id);
     return newProductRef.id;
@@ -71,7 +77,6 @@ export const addProduct = async (product: Product) => {
   }
 };
 
-// Update an existing product
 export const updateProduct = async (id: string, product: Product) => {
   try {
     const productRef = doc(productsRef, id);
@@ -81,6 +86,7 @@ export const updateProduct = async (id: string, product: Product) => {
       price: product.price,
       status: product.status,
       img: product.img,
+      storeId: product.storeId, // Changed from storeName to storeId
     });
     console.log("Product updated with ID:", id);
   } catch (error) {
@@ -89,7 +95,6 @@ export const updateProduct = async (id: string, product: Product) => {
   }
 };
 
-// Delete a product from the Firestore collection
 export const deleteProduct = async (id: string) => {
   try {
     const productRef = doc(productsRef, id);

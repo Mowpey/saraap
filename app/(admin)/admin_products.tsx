@@ -44,9 +44,14 @@ type Product = {
   price: number;
   status: boolean;
   img: string;
+  storeId: string;  // Changed from storeName
 };
-
 const AdminTable = () => {
+  const { storeId, storeName } = useLocalSearchParams<{ 
+    storeId: string;
+    storeName: string;
+  }>();
+
   const [products, setProducts] = React.useState<Product[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
@@ -75,7 +80,8 @@ const AdminTable = () => {
   const fetchProducts = async (direction: "asc" | "desc") => {
     try {
       setIsLoading(true);
-      const productsData = await getProducts(direction);
+      // Modified to pass storeName to getProducts
+      const productsData = await getProducts(storeId, direction);
       setProducts(productsData);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -86,7 +92,7 @@ const AdminTable = () => {
 
   React.useEffect(() => {
     fetchProducts(sortDirection);
-  }, [sortDirection]);
+  }, [sortDirection, storeId]);
 
   const handleEdit = (item: Product) => {
     setSelectedProduct(item);
@@ -137,11 +143,12 @@ const AdminTable = () => {
               </Button>
             </div>
           </div>
-
           <AddProductDialog
             isOpen={isAddDialogOpen}
             onClose={() => setIsAddDialogOpen(false)}
             onProductAdded={() => fetchProducts(sortDirection)}
+            storeId={storeId}  // Pass storeId instead of storeName
+            storeName={storeName}  // Pass storeName for display purposes
           />
           <EditProductDialog
             isOpen={isEditDialogOpen}
@@ -151,16 +158,19 @@ const AdminTable = () => {
             }}
             onProductEdited={() => fetchProducts(sortDirection)}
             product={selectedProduct}
+            storeId={storeId}  // Add storeId prop if needed in edit dialog
+            storeName={storeName}  // Add storeName prop if needed in edit dialog
           />
-          <DeleteProductDialog
-            isOpen={isDeleteDialogOpen}
-            onClose={() => {
-              setIsDeleteDialogOpen(false);
-              setSelectedProduct(null);
-            }}
-            onProductDeleted={() => fetchProducts(sortDirection)}
-            product={selectedProduct}
-          />
+<DeleteProductDialog
+  isOpen={isDeleteDialogOpen}
+  onClose={() => {
+    setIsDeleteDialogOpen(false);
+    setSelectedProduct(null);
+  }}
+  onProductDeleted={() => fetchProducts(sortDirection)}
+  product={selectedProduct}
+  storeName={storeName}
+/>
 
           <Table>
             <TableHeader>

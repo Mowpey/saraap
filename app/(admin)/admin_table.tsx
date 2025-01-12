@@ -102,10 +102,13 @@ const AdminTable = () => {
     setSortDirection(newDirection as "asc" | "desc");
   };
 
-  const handleStoreClick = (storeName: string) => {
+  const handleStoreClick = (store: Store) => {
     router.push({
       pathname: "/admin_products" as RelativePathString,
-      params: { storeName },
+      params: { 
+        storeId: store.id,  // Pass the store ID
+        storeName: store.storeName  // Pass the store name for display
+      },
     });
   };
   return (
@@ -214,7 +217,7 @@ const AdminTable = () => {
                     </Button>
                     <Button
                       variant="secondary"
-                      onClick={() => handleStoreClick(store.storeName)}
+                      onClick={() => handleStoreClick(store)}
                     >
                       <SquareArrowOutUpRight />
                     </Button>
