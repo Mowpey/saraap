@@ -14,14 +14,51 @@ import {
 import { Link } from "expo-router";
 import { getProducts } from "@/services/products/crud_product";
 import { getStores } from "@/services/store/crud_store";
+import { getAuth } from 'firebase/auth';
+import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 
 const { width } = Dimensions.get("window");
+const db = getFirestore();
+const auth = getAuth();
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("");
   const [storeData, setStoreData] = useState([]);
   const [products, setProducts] = useState({});
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [userAddress, setUserAddress] = useState({
+    address: "Loading...",
+    city: "Loading...",
+    houseNumber: ""
+  });
+
+  useEffect(() => {
+    const fetchUserAddress = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          const addressQuery = query(
+            collection(db, "addresses"),
+            where("userId", "==", currentUser.uid)
+          );
+          const querySnapshot = await getDocs(addressQuery);
+          
+          if (!querySnapshot.empty) {
+            const addressData = querySnapshot.docs[0].data();
+            setUserAddress({
+              address: addressData.address,
+              city: addressData.city,
+              houseNumber: addressData.houseNumber
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching address:", error);
+        }
+      }
+    };
+
+    fetchUserAddress();
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -104,14 +141,21 @@ export default function App() {
     return activeTab ? [products[activeTab]] : [];
   };
 
+  const formatAddress = () => {
+    const parts = [];
+    if (userAddress.houseNumber) parts.push(userAddress.houseNumber);
+    if (userAddress.address) parts.push(userAddress.address);
+    return parts.join(" ");
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.firstLayer}>
         <Link href="/screen/address/myaddress" asChild>
           <TouchableOpacity style={styles.buttonContainer}>
             <View style={styles.textContainer}>
-              <Text style={styles.textPrimary}>Golden Harvest Subdi.</Text>
-              <Text style={styles.textSub}>Tuguegarao City, Cagayan</Text>
+              <Text style={styles.textPrimary}>{formatAddress()}</Text>
+              <Text style={styles.textSub}>{userAddress.city}</Text>
             </View>
             <Entypo name="location" style={styles.buttonIcon} />
           </TouchableOpacity>
@@ -209,7 +253,7 @@ export default function App() {
                             name: item.productName,
                             image: item.img,
                             rating: item.rating,
-                            likes: Math.floor(Math.random() * 20) + 5, // Example random likes
+                            likes: Math.floor(Math.random() * 20) + 5,
                             description:
                               "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
                             ingredients:
