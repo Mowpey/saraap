@@ -105,9 +105,9 @@ const AdminTable = () => {
   const handleStoreClick = (store: Store) => {
     router.push({
       pathname: "/admin_products" as RelativePathString,
-      params: { 
-        storeId: store.id,  // Pass the store ID
-        storeName: store.storeName  // Pass the store name for display
+      params: {
+        storeId: store.id,
+        storeName: store.storeName,
       },
     });
   };

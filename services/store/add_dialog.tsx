@@ -40,9 +40,9 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
       const storesRef = collection(db, "stores");
       const newStore = {
         storeName: formData.storeName,
-        productQuantity: parseInt(formData.productQuantity),
+        productQuantity: 0,
         status: true,
-        actionUrl: formData.actionUrl,
+        actionUrl: "/admin_products/",
       };
 
       await addDoc(storesRef, newStore);
@@ -84,28 +84,7 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
               required
             />
           </div>
-          <div className="py-2">
-            <Label htmlFor="productQuantity">Product Quantity</Label>
-            <Input
-              id="productQuantity"
-              name="productQuantity"
-              type="number"
-              value={formData.productQuantity}
-              onChange={handleChange}
-              style={{ WebkitAppearance: "none", MozAppearance: "textfield" }}
-              required
-            />
-          </div>
-          <div className="py-2">
-            <Label htmlFor="actionUrl">Action URL</Label>
-            <Input
-              id="actionUrl"
-              name="actionUrl"
-              value={formData.actionUrl}
-              onChange={handleChange}
-              required
-            />
-          </div>
+
           <DialogFooter className="py-2">
             <Button type="submit" disabled={isLoading}>
               {isLoading ? "Adding..." : "Add Store"}

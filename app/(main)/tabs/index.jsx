@@ -1,142 +1,132 @@
-import Entypo from '@expo/vector-icons/Entypo';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import React, { useState } from 'react';
-import { ScrollView, View, Image, StyleSheet, Dimensions, Text, TouchableOpacity, TextInput } from 'react-native';
-import { Link } from 'expo-router';
+import Entypo from "@expo/vector-icons/Entypo";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import React, { useState, useEffect } from "react";
+import {
+  ScrollView,
+  View,
+  Image,
+  StyleSheet,
+  Dimensions,
+  Text,
+  TouchableOpacity,
+  TextInput,
+} from "react-native";
+import { Link } from "expo-router";
+import { getProducts } from "@/services/products/crud_product";
+import { getStores } from "@/services/store/crud_store";
 
-const { width } = Dimensions.get('window');
-
-const images = [
-  {
-    id: 1,
-    uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWczfji7SrBcKRPC6foxzXipwGTKikHaoIdg&s',
-    title: 'Cherry Healthy',
-    ratings: '4.6',
-  },
-  {
-    id: 2,
-    uri: 'https://www.allrecipes.com/thmb/_OKqViGmlNaa9GV_c4cpwpwApGk=/0x512/filters:no_upscale():max_bytes(150000):strip_icc()/25473-the-perfect-basic-burger-DDMFS-4x3-56eaba3833fd4a26a82755bcd0be0c54.jpg',
-    title: 'Burger',
-    ratings: '4.4',
-  },
-  {
-    id: 3,
-    uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3xmBLnEEZiONfdpuyDNCZadCZbi3qmGZSAQ&s',
-    title: 'Carbonara',
-    ratings: '3.8',
-  },
-];
-
-const newTasteItems = [
-  {
-    id: 1,
-    name: 'Soup',
-    price: 'P15',
-    rating: 4.1,
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSL4yXMG6VQlvi5Z8ErBIJ1frJCnF_hCNyIQQ&s'
-  },
-  {
-    id: 2,
-    name: 'Chicken',
-    price: 'P30',
-    rating: 4.7,
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMgZG3x99SMnWwv6OkticJ4JQG1m9Qg3Wu0g&s'
-  },
-  {
-    id: 3,
-    name: 'Shrimp',
-    price: 'P50',
-    rating: 3.2,
-    image: 'https://www.seriouseats.com/thmb/ch4c6o15shxPyfO8jnSfUh_wQ0s=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/__opt__aboutcom__coeus__resources__content_migration__serious_eats__seriouseats.com__recipes__images__2015__08__09102015-grilled-lemongrass-shrimp-shaozhizhong-8-a5525792ce7a4c9693af0a564eae74a4.jpg'
-  },
-];
-
-const popularItems = [
-  {
-    id: 1,
-    name: 'Pizza',
-    price: 'P50',
-    rating: 4.8,
-    image: 'https://www.foodandwine.com/thmb/Wd4lBRZz3X_8qBr69UOu2m7I2iw=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/classic-cheese-pizza-FT-RECIPE0422-31a2c938fc2546c9a07b7011658cfd05.jpg'
-  },
-  {
-    id: 2,
-    name: 'Sushi',
-    price: 'P70',
-    rating: 4.6,
-    image: 'https://cdn.britannica.com/52/128652-050-14AD19CA/Maki-zushi.jpg'
-  },
-  {
-    id: 3,
-    name: 'Pasta',
-    price: 'P80',
-    rating: 4.5,
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjyhQhuaq9lhzjwT7gZur76QjviLeQc9D6Gw&s'
-  }
-];
-
-const recommendedItems = [
-  {
-    id: 1,
-    name: 'Salad',
-    price: 'P90',
-    rating: 4.3,
-    image: 'https://www.eatingwell.com/thmb/CcLY-9Ru3OWpd5k_V-hoxlk4whg=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/chopped-power-salad-with-chicken-hero-1x1-0178-475bbf1bbd884d5d97fc236b8975dff2.jpg'
-  },
-  {
-    id: 2,
-    name: 'Ramen',
-    price: 'P100',
-    rating: 4.6,
-    image: 'https://cdn.britannica.com/77/234877-050-01EC3819/Tonkotsu-ramen.jpg'
-  },
-  {
-    id: 3,
-    name: 'Steak',
-    price: 'P80',
-    rating: 4.7,
-    image: 'https://www.allrecipes.com/thmb/OJ28fIFte6Pyg93ML8IM-APbu1Y=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/AR-14554-sirloin-steak-with-garlic-butter-hero-4x3-d12fa79836754fcf850388e4677bbf55.jpg'
-  }
-];
+const { width } = Dimensions.get("window");
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('New Taste');
-  const tabs = ['New Taste', 'Popular', 'Recommended'];
+  const [activeTab, setActiveTab] = useState("");
+  const [storeData, setStoreData] = useState([]);
+  const [products, setProducts] = useState({});
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const stores = await getStores();
+        const activeStores = stores.filter((store) => store.status);
+
+        setStoreData(activeStores);
+
+        if (activeStores.length > 0) {
+          setActiveTab(activeStores[0].id);
+        }
+
+        let allProducts = [];
+        let storeProductsMap = {};
+
+        for (const store of activeStores) {
+          const storeProducts = await getProducts(store.id);
+          const activeProducts = storeProducts.filter(
+            (product) => product.status
+          );
+
+          if (activeProducts.length > 0) {
+            allProducts = [
+              ...allProducts,
+              ...activeProducts.map((product) => ({
+                id: product.id,
+                productName: product.productName,
+                category: product.category,
+                price: product.price,
+                img: product.img,
+                storeName: store.storeName,
+                storeId: store.id,
+                status: product.status,
+                rating: 4.5,
+              })),
+            ];
+
+            storeProductsMap[store.id] = {
+              storeId: store.id,
+              storeName: store.storeName,
+              products: activeProducts.map((product) => ({
+                id: product.id,
+                productName: product.productName,
+                category: product.category,
+                price: product.price,
+                img: product.img,
+                storeName: store.storeName,
+                status: product.status,
+                rating: 4.5,
+              })),
+            };
+          }
+        }
+
+        setFeaturedProducts(
+          allProducts.slice(0, 3).map((product) => ({
+            id: product.id,
+            uri: product.img,
+            title: product.productName,
+            ratings: product.rating.toString(),
+            description:
+              "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            ingredients: "Nam quis nibh velit",
+            price: product.price,
+            likes: Math.floor(Math.random() * 20) + 5,
+          }))
+        );
+
+        setProducts(storeProductsMap);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const getActiveData = () => {
-    switch (activeTab) {
-      case 'Popular':
-        return popularItems;
-      case 'Recommended':
-        return recommendedItems;
-      default:
-        return newTasteItems;
-    }
+    return activeTab ? [products[activeTab]] : [];
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.firstLayer}>
-      <Link href="/screen/address/myaddress" asChild>
-        <TouchableOpacity style={styles.buttonContainer}>
+        <Link href="/screen/address/myaddress" asChild>
+          <TouchableOpacity style={styles.buttonContainer}>
             <View style={styles.textContainer}>
               <Text style={styles.textPrimary}>Golden Harvest Subdi.</Text>
               <Text style={styles.textSub}>Tuguegarao City, Cagayan</Text>
             </View>
-            <Entypo name="location" style={styles.buttonIcon}/>
+            <Entypo name="location" style={styles.buttonIcon} />
           </TouchableOpacity>
-      </Link>
-        <Link href="/screen/favorites/myfavorites" >
+        </Link>
+        <Link href="/screen/favorites/myfavorites">
           <TouchableOpacity style={styles.faveContainer}>
-            <MaterialIcons name="favorite" style={styles.faveIcon}/>
+            <MaterialIcons name="favorite" style={styles.faveIcon} />
           </TouchableOpacity>
         </Link>
       </View>
 
       <View style={styles.searchContainer}>
-        <TextInput 
-          style={styles.searchField} 
-          placeholder="Search Something..." 
+        <TextInput
+          style={styles.searchField}
+          placeholder="Search Something..."
         />
       </View>
 
@@ -147,68 +137,116 @@ export default function App() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollView}
         >
-          {images.map((image) => (
-              <Link 
-              key={image.id} 
-              href={`screen/food_details/${image.id}`} 
+          {featuredProducts.map((product) => (
+            <Link
+              key={product.id}
+              href={{
+                pathname: "/screen/food_details/[id]",
+                params: {
+                  id: product.id,
+                  name: product.title,
+                  image: product.uri,
+                  rating: product.ratings,
+                  likes: product.likes,
+                  description: product.description,
+                  ingredients: product.ingredients,
+                  price: product.price,
+                },
+              }}
               style={styles.card}
             >
-              <Image source={{ uri: image.uri }} style={styles.image} />
-              <Text style={styles.title}>{image.title}</Text>
-              <Text style={styles.ratings}>{image.ratings} <Entypo name="star" size={20} color="yellow" /></Text>
+              <Image source={{ uri: product.uri }} style={styles.image} />
+              <Text style={styles.title}>{product.title}</Text>
+              <Text style={styles.ratings}>
+                {product.ratings}{" "}
+                <Entypo name="star" size={20} color="yellow" />
+              </Text>
             </Link>
           ))}
         </ScrollView>
       </View>
 
       <View style={styles.tabSection}>
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.tabContainer}
         >
-          {tabs.map((tab) => (
+          {storeData.map((store) => (
             <TouchableOpacity
-              key={tab}
-              onPress={() => setActiveTab(tab)}
-              style={[
-                styles.tab,
-                activeTab === tab && styles.activeTab,
-              ]}
+              key={store.id}
+              onPress={() => setActiveTab(store.id)}
+              style={[styles.tab, activeTab === store.id && styles.activeTab]}
             >
-              <Text style={[
-                styles.tabText,
-                activeTab === tab && styles.activeTabText
-              ]}>
-                {tab}
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === store.id && styles.activeTabText,
+                ]}
+              >
+                {store.storeName}
               </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        <ScrollView 
+        <ScrollView
           style={styles.foodList}
           showsVerticalScrollIndicator={false}
         >
-          {getActiveData().map((item) => (
-            <TouchableOpacity key={item.id} style={styles.foodItem}>
-              <Image 
-                source={{ uri: item.image }} 
-                style={styles.foodImage} 
-              />
-              <View href="tabs/food-details.jsx" style={styles.foodInfo}>
-                <Text style={styles.foodName}>{item.name}</Text>
-                <Text style={styles.foodPrice}>{item.price}</Text>
-                <View style={styles.ratingContainer}>
-                  <Text style={styles.stars}>
-                    {'★'.repeat(Math.floor(item.rating))}
-                    {'☆'.repeat(5 - Math.floor(item.rating))}
-                  </Text>
-                  <Text style={styles.ratingNumber}> {item.rating}</Text>
+          {getActiveData().map(
+            (store) =>
+              store && (
+                <View key={store.storeName}>
+                  {store.products &&
+                    store.products.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={{
+                          pathname: "/screen/food_details/[id]",
+                          params: {
+                            id: item.id,
+                            name: item.productName,
+                            image: item.img,
+                            rating: item.rating,
+                            likes: Math.floor(Math.random() * 20) + 5, // Example random likes
+                            description:
+                              "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                            ingredients:
+                              "Fresh ingredients from local suppliers",
+                            price: item.price,
+                          },
+                        }}
+                      >
+                        <TouchableOpacity style={styles.foodItem}>
+                          <Image
+                            source={{ uri: item.img }}
+                            style={styles.foodImage}
+                          />
+                          <View style={styles.foodInfo}>
+                            <Text style={styles.foodName}>
+                              {item.productName}
+                            </Text>
+                            <Text style={styles.foodPrice}>
+                              {"₱" + item.price}
+                            </Text>
+                            <View style={styles.ratingContainer}>
+                              <Text style={styles.stars}>
+                                {"★".repeat(Math.floor(item.rating))}
+                                {"☆".repeat(5 - Math.floor(item.rating))}
+                              </Text>
+                              <Text style={styles.ratingNumber}>
+                                {" "}
+                                {item.rating}
+                              </Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      </Link>
+                    ))}
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              )
+          )}
         </ScrollView>
       </View>
     </View>
@@ -223,37 +261,37 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   firstLayer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 25,
   },
   buttonContainer: {
     flex: 1,
-    maxWidth: 'auto',
+    maxWidth: "auto",
     paddingVertical: 10,
     paddingHorizontal: 20,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 50,
     borderRadius: 8,
-    backgroundColor: '#130E40',
-    alignItems: 'center',
+    backgroundColor: "#130E40",
+    alignItems: "center",
   },
   textContainer: {
     gap: 5,
     lineHeight: 1.5,
     letterSpacing: -0.05,
-    textTransform: 'capitalize',
+    textTransform: "capitalize",
   },
   textPrimary: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   textSub: {
-    color: '#DEE1EA',
+    color: "#DEE1EA",
     fontSize: 12,
   },
   buttonIcon: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 25,
   },
   faveContainer: {
@@ -261,9 +299,9 @@ const styles = StyleSheet.create({
   },
   faveIcon: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     fontSize: 30,
-    color: '#AE445A',
+    color: "#AE445A",
   },
   searchContainer: {
     marginTop: 5,
@@ -271,20 +309,20 @@ const styles = StyleSheet.create({
   searchField: {
     paddingVertical: 10,
     paddingHorizontal: 30,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderColor: '#000',
+    flexDirection: "row",
+    alignItems: "center",
+    borderColor: "#000",
     borderWidth: 2,
     borderRadius: 20,
   },
   tabSection: {
-    marginTop: -10
+    marginTop: -10,
   },
   tabContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 0,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
     height: 40,
   },
   tab: {
@@ -294,41 +332,41 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    color: '#888',
+    color: "#888",
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#130E40',
+    borderBottomColor: "#130E40",
   },
   activeTabText: {
-    fontWeight: 'bold',
-    color: '#130E40',
+    fontWeight: "bold",
+    color: "#130E40",
   },
   secondLayer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: 10,
   },
   scrollView: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 10,
   },
   card: {
-    width: width * 0.6, 
+    width: width * 0.6,
     marginHorizontal: 15,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 10,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 150,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     padding: 16,
   },
   ratings: {
@@ -340,12 +378,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   foodItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    marginVertical: 0
+    borderBottomColor: "#eee",
+    marginVertical: 0,
   },
   foodImage: {
     width: 60,
@@ -355,28 +393,28 @@ const styles = StyleSheet.create({
   },
   foodInfo: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   foodName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 4,
   },
   foodPrice: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 4,
   },
   ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   stars: {
-    color: '#FFD700',
+    color: "#FFD700",
     letterSpacing: 2,
   },
   ratingNumber: {
-    color: '#666',
+    color: "#666",
     marginLeft: 5,
-  }
+  },
 });
