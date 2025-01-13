@@ -1,24 +1,234 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet, Animated, Alert, RefreshControl,ActivityIndicator} from 'react-native';
 import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import { Link } from "expo-router";
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { getAuth } from "firebase/auth";
+import { db } from "services/FirebaseConfig.ts";
+import { useLocalSearchParams, useRouter } from "expo-router";
+
+  
+const getButtonText = (orders) => {
+  if (!orders || orders.length === 0) return null;
+  
+  // Check if all orders have the same status
+  const allInOrder = orders.every(order => order.status === 'in_order');
+  const anyInProgress = orders.some(order => order.status === 'in_progress');
+  const allFinished = orders.every(order => order.status === 'finished');
+  
+  if (allFinished) {
+    return null; // Don't show button
+  } else if (anyInProgress) {
+    return 'Estimated Delivery: 20 mins'; // Display estimated delivery time
+  } else if (allInOrder) {
+    return 'Review Payment and Address';
+  }
+  return 'Review Payment and Address'; // Default text
+};
+const useInProgressOrders = () => {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+
+
+  const fetchOrders = async () => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      
+      if (!user) {
+        console.log('No user logged in');
+        setLoading(false);
+        return;
+      }
+
+      console.log('Fetching orders for user:', user.uid);
+      
+      const q = query(
+        collection(db, 'in_progress'),
+        where('userId', '==', user.uid),
+      );
+
+      const querySnapshot = await getDocs(q);
+      const ordersData = querySnapshot.docs
+      
+  .map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    
+  }))
+  .filter(order => order.status !== 'finished'); 
+
+      console.log('Orders fetched:', ordersData.length);
+      setOrders(ordersData);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateOrderQuantity = async (orderId, newQuantity, newTotalAmount) => {
+    try {
+      const orderRef = doc(db, 'in_progress', orderId);
+      await updateDoc(orderRef, {
+        quantity: newQuantity,
+        totalAmount: newTotalAmount
+      });
+      
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId 
+            ? { ...order, quantity: newQuantity, totalAmount: newTotalAmount }
+            : order
+        )
+      );
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const deleteOrder = async (orderId) => {
+    try {
+      const orderRef = doc(db, 'in_progress', orderId);
+      await deleteDoc(orderRef);
+      setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  return { 
+    orders, 
+    loading, 
+    error, 
+    updateOrderQuantity,
+    deleteOrder,
+    refreshOrders: fetchOrders
+  };
+};
 
 const OrdersScreen = () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const router = useRouter();
+  const auth = getAuth();
   const [activeTab, setActiveTab] = useState('In Progress');
-  const indicatorPosition = useRef(new Animated.Value(0)).current; 
-  const tabWidth = 150; 
-  const indicatorWidth = scale(35); 
+  const indicatorPosition = useRef(new Animated.Value(0)).current;
+  const { 
+    orders, 
+    loading, 
+    error, 
+    updateOrderQuantity, 
+    deleteOrder, 
+    refreshOrders  // Add this
+  } = useInProgressOrders();
+
 
   const [fontsLoaded] = useFonts({
     'Poppins-Regular': require('@/assets/fonts/Poppins-Regular.ttf'),
     'Poppins-Medium': require('@/assets/fonts/Poppins-Medium.ttf'),
   });
-
-  // Slide the indicator when the tab changes
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshOrders();
+    } catch (error) {
+      console.error('Error refreshing orders:', error);
+      Alert.alert('Error', 'Failed to refresh orders');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+  
   useEffect(() => {
-    const toValue = activeTab === 'In Progress' ? 30 : tabWidth;
+    refreshOrders();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'In Progress') {
+      refreshOrders();
+    }
+  }, [activeTab]);
+  
+  
+  const handleReviewPayment = () => {
+    const userId = auth.currentUser?.uid;
+    // Calculate total amount from all orders
+    const totalAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+    
+    // Get store name from the first order (assuming all orders are from the same store)
+    const storeName = orders[0]?.storeName || '';
+    const customerName = auth.currentUser?.displayName || '';
+    
+    router.push({
+      pathname: "/screen/payment_order/payment_address",
+      params: {
+        userId: userId,
+        totalAmount: totalAmount,
+        orderCount: orders.length,
+        storeName: storeName,
+
+      }
+    });
+  };
+  
+  const handleIncrement = async (order) => {
+    try {
+      const newQuantity = order.quantity + 1;
+      const newTotalAmount = order.price * newQuantity;
+      await updateOrderQuantity(order.id, newQuantity, newTotalAmount);
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      Alert.alert('Error', 'Failed to update quantity');
+    }
+  };
+
+  const handleDecrement = async (order) => {
+    try {
+      if (order.quantity === 1) {
+        Alert.alert(
+          'Remove Item',
+          'Do you want to remove this item from your order?',
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            {
+              text: 'Remove',
+              onPress: async () => {
+                try {
+                  await deleteOrder(order.id);
+                } catch (error) {
+                  console.error('Error deleting order:', error);
+                  Alert.alert('Error', 'Failed to remove item');
+                }
+              },
+              style: 'destructive',
+            },
+          ]
+        );
+      } else {
+        const newQuantity = order.quantity - 1;
+        const newTotalAmount = order.price * newQuantity;
+        await updateOrderQuantity(order.id, newQuantity, newTotalAmount);
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      Alert.alert('Error', 'Failed to update quantity');
+    }
+  };
+
+  useEffect(() => {
+    const toValue = activeTab === 'In Progress' ? 30 : 150;
     Animated.timing(indicatorPosition, {
       toValue,
       duration: 300,
@@ -26,97 +236,199 @@ const OrdersScreen = () => {
     }).start();
   }, [activeTab]);
 
-  const inProgressOrders = [
-    { id: 1, title: 'Avocado', count: '3 items • ₱ 60', image: require('@/assets/images/avocado.jpg') },
-    { id: 2, title: 'Kopiko', count: '10 items • ₱ 50', image: require('@/assets/images/kopiko.jpg') },
-        { id: 3, title: 'Sprinkle', count: '2 items • ₱ 50', image: require('@/assets/images/sprinkle.jpg') },
-    { id: 4, title: 'Bawang', count: '10 items • ₱ 100', image: require('@/assets/images/bawang.png') },
-  ];
-
   const pastOrders = [
     { id: 1, title: 'Curry', count: '1 item • ₱ 99', image: require('@/assets/images/curry.jpg'), date: 'Nov 3', time: '14:00' },
     { id: 2, title: 'Avocado', count: '1 item • ₱ 60', image: require('@/assets/images/avocado.jpg'), date: 'Nov 3', time: '09:00', status: 'Cancelled' },
   ];
 
-  const ordersToDisplay = activeTab === 'In Progress' ? inProgressOrders : pastOrders;
+  const formatPrice = (price) => {
+    return `₱ ${price.toFixed(2)}`;
+  };
+
+  const renderOrderItem = (order) => {
+    if (activeTab === 'In Progress') {
+      return (
+        <View key={order.id} style={styles.orderItem}>
+          <Image 
+            source={{ uri: order.productImage }} 
+            style={styles.itemImage}
+            defaultSource={require('@/assets/images/splash.jpg')}
+          />
+          <View style={styles.itemDetails}>
+            <Text style={styles.itemTitle}>{order.productName}</Text>
+            <Text style={styles.itemCount}>
+              {order.quantity} {order.quantity === 1 ? 'item' : 'items'} • {formatPrice(order.totalAmount)}
+            </Text>
+            <Text style={styles.storeText}>{order.storeName}</Text>
+          </View>
+          {order.status !== 'in_progress' && (
+          <View style={styles.quantityControls}>
+            <TouchableOpacity 
+              style={styles.quantityButton}
+              onPress={() => handleDecrement(order)}
+            >
+              <Text style={styles.quantityButtonText}>−</Text>
+            </TouchableOpacity>
+            <Text style={styles.quantityText}>{order.quantity}</Text>
+            <TouchableOpacity 
+              style={styles.quantityButton}
+              onPress={() => handleIncrement(order)}
+            >
+              <Text style={styles.quantityButtonText}>+</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        </View>
+      );
+    } else {
+      return (
+        <View key={order.id} style={styles.orderItem}>
+          <Image source={order.image} style={styles.itemImage} />
+          <View style={styles.itemDetails}>
+            <Text style={styles.itemTitle}>{order.title}</Text>
+            <Text style={styles.itemCount}>{order.count}</Text>
+          </View>
+          <View style={styles.itemInfo}>
+            <Text style={styles.itemDate}>{order.date}, {order.time}</Text>
+            {order.status && <Text style={styles.itemStatus}>{order.status}</Text>}
+          </View>
+        </View>
+      );
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color="#020452" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text>Error loading orders: {error}</Text>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Header */}
-
-
+    <ScrollView contentContainerStyle={styles.container}
+    refreshControl={
+      <RefreshControl
+        refreshing={isRefreshing}
+        onRefresh={handleRefresh}
+        tintColor="#000"
+        colors={['#000']}
+      />
+    }>
       <View style={styles.header}>
-        {/* <TouchableOpacity style={styles.backButton} activeOpacity={0.7}>
-          <View style={styles.backButtonContainer}>
-            <Ionicons name="chevron-back" size={scale(15)} color="#ffffff" />
-          </View>
-        </TouchableOpacity> */}
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerTitle}>Your Orders</Text>
           <Text style={styles.headerSubtitle}>Wait for the best meal</Text>
         </View>
       </View>
 
-      {/* Tabs */}
       <View style={styles.tabsContainer}>
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => setActiveTab('In Progress')}
         >
-          <Text style={[styles.tabText, activeTab === 'In Progress' && styles.activeTabText]}>In Progress</Text>
+          <Text style={[styles.tabText, activeTab === 'In Progress' && styles.activeTabText]}>
+            In Progress
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => setActiveTab('Past Orders')}
         >
-          <Text style={[styles.tabText, activeTab === 'Past Orders' && styles.activeTabText]}>Past Orders</Text>
+          <Text style={[styles.tabText, activeTab === 'Past Orders' && styles.activeTabText]}>
+            Past Orders
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Sliding Indicator */}
       <View style={styles.indicatorContainer}>
         <View style={styles.grayLine} />
         <Animated.View
           style={[
             styles.indicator,
             {
-              width: indicatorWidth, 
+              width: scale(35),
               transform: [{ translateX: indicatorPosition }],
             },
           ]}
         />
       </View>
 
-      {/* Orders */}
       <View style={styles.ordersContainer}>
-        {ordersToDisplay.map(order => (
-          <View key={order.id} style={styles.orderItem}>
-            <Image source={order.image} style={styles.itemImage} />
-            <View style={styles.itemDetails}>
-              <Text style={styles.itemTitle}>{order.title}</Text>
-              <Text style={styles.itemCount}>{order.count}</Text>
-            </View>
-            {activeTab === 'Past Orders' && (
-              <View style={styles.itemInfo}>
-                <Text style={styles.itemDate}>{order.date}, {order.time}</Text>
-                {order.status && <Text style={styles.itemStatus}>{order.status}</Text>}
-              </View>
-            )}
-          </View>
-        ))}
+        {activeTab === 'In Progress' 
+          ? orders.map(order => renderOrderItem(order))
+          : pastOrders.map(order => renderOrderItem(order))}
       </View>
-      {activeTab === 'In Progress' && (
-  <TouchableOpacity style={styles.reviewButton}>
-     <Link href="/screen/payment_order/payment_address"> <Text style={styles.buttonText}>Review Payment and Address</Text></Link>
-  </TouchableOpacity>
-)}
+
+      {activeTab === 'In Progress' && orders.length > 0 && (
+        <TouchableOpacity 
+  style={styles.reviewButton}
+  onPress={handleReviewPayment}
+  disabled={getButtonText(orders) === 'Estimated Delivery: 20 mins'} 
+>
+  <Text style={styles.buttonText}>{getButtonText(orders)}</Text>
+</TouchableOpacity> 
+      )}
     </ScrollView>
-    
   );
 };
 
 const styles = StyleSheet.create({
+  quantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: moderateScale(8),
+  },
+  quantityButton: {
+    width: moderateScale(28),
+    height: moderateScale(28),
+    borderRadius: moderateScale(14),
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: moderateScale(4),
+  },
+  quantityButtonText: {
+    fontSize: moderateScale(16),
+    color: '#000',
+    fontWeight: 'bold',
+  },
+  quantityText: {
+    fontSize: moderateScale(16),
+    fontFamily: 'Poppins-Medium',
+    marginHorizontal: moderateScale(8),
+    minWidth: moderateScale(20),
+    textAlign: 'center',
+  },
+  orderItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: verticalScale(16),
+    backgroundColor: '#fff',
+    padding: moderateScale(8),
+    borderRadius: moderateScale(8),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  itemDetails: {
+    flex: 1,
+    marginRight: moderateScale(8),
+  },
   container: {
     flexGrow: 1,
     backgroundColor: '#fff',
@@ -237,7 +549,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(16),
     borderRadius: moderateScale(8),
     alignItems: 'center',
-    marginTop: verticalScale(160),
+    marginTop: verticalScale(20),
     alignSelf: 'center',
     width: '90%',
   },

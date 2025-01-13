@@ -60,6 +60,7 @@ export default function App() {
     fetchUserAddress();
   }, []);
 
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -71,7 +72,12 @@ export default function App() {
         if (activeStores.length > 0) {
           setActiveTab(activeStores[0].id);
         }
-
+        const storeNameMap = activeStores.reduce((acc, store) => {
+          acc[store.id] = store.storeName;
+          return acc;
+      
+        }, {});
+    
         let allProducts = [];
         let storeProductsMap = {};
 
@@ -80,6 +86,7 @@ export default function App() {
           const activeProducts = storeProducts.filter(
             (product) => product.status
           );
+
 
           if (activeProducts.length > 0) {
             allProducts = [
@@ -90,8 +97,8 @@ export default function App() {
                 category: product.category,
                 price: product.price,
                 img: product.img,
-                storeName: store.storeName,
                 storeId: store.id,
+                storeName: storeNameMap[store.id], // Look up store name using ID
                 status: product.status,
                 rating: 4.5,
               })),
@@ -106,7 +113,8 @@ export default function App() {
                 category: product.category,
                 price: product.price,
                 img: product.img,
-                storeName: store.storeName,
+                storeId: store.id,
+                storeName: storeNameMap[store.id], // Look up store name using ID
                 status: product.status,
                 rating: 4.5,
               })),
@@ -120,13 +128,14 @@ export default function App() {
             uri: product.img,
             title: product.productName,
             ratings: product.rating.toString(),
-            description:
-              "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             ingredients: "Nam quis nibh velit",
             price: product.price,
             likes: Math.floor(Math.random() * 20) + 5,
+            storeName: storeNameMap[product.storeId] // Use storeId to look up the store name
           }))
         );
+        
 
         setProducts(storeProductsMap);
       } catch (error) {
@@ -182,22 +191,23 @@ export default function App() {
           contentContainerStyle={styles.scrollView}
         >
           {featuredProducts.map((product) => (
-            <Link
-              key={product.id}
-              href={{
-                pathname: "/screen/food_details/[id]",
-                params: {
-                  id: product.id,
-                  name: product.title,
-                  image: product.uri,
-                  rating: product.ratings,
-                  likes: product.likes,
-                  description: product.description,
-                  ingredients: product.ingredients,
-                  price: product.price,
-                },
-              }}
-              style={styles.card}
+  <Link
+    key={product.id}
+    href={{
+      pathname: "/screen/food_details/[id]",
+      params: {
+        id: product.id,
+        name: product.title,
+        image: product.uri,
+        rating: product.ratings,
+        likes: product.likes,
+        description: product.description,
+        ingredients: product.ingredients,
+        price: product.price,
+        storeName: product.storeName // Add this line to pass the store name
+      },
+    }}
+    style={styles.card}
             >
               <Image source={{ uri: product.uri }} style={styles.image} />
               <Text style={styles.title}>{product.title}</Text>
@@ -238,6 +248,7 @@ export default function App() {
           style={styles.foodList}
           showsVerticalScrollIndicator={false}
         >
+
           {getActiveData().map(
             (store) =>
               store && (
@@ -259,8 +270,10 @@ export default function App() {
                             ingredients:
                               "Fresh ingredients from local suppliers",
                             price: item.price,
+                            storeName: store.storeName
                           },
                         }}
+                        
                       >
                         <TouchableOpacity style={styles.foodItem}>
                           <Image

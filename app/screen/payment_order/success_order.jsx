@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import {
   scale,
   verticalScale,
@@ -8,7 +8,8 @@ import {
 } from "react-native-size-matters";
 import { useFonts } from "expo-font";
 
-const PaymentScreen = () => {
+// Assuming orderStatus is passed as a prop or fetched from database
+const PaymentScreen = ({ orderStatus }) => {
   const [customFonts] = useFonts({
     "Poppins-Regular": require("@/assets/fonts/Poppins-Regular.ttf"),
     "Poppins-Bold": require("@/assets/fonts/Poppins-Bold.ttf"),
@@ -30,19 +31,35 @@ const PaymentScreen = () => {
         Just stay at home while we are preparing your best foods
       </Text>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          href="/tabs"
-          style={[styles.button, styles.grayButton]}
-        >
-          <Text style={styles.buttonText}>Order Other Foods</Text>
-        </TouchableOpacity>
+        {/* Conditionally render the buttons based on order status */}
+        {orderStatus === "in_order" && (
+          <TouchableOpacity
+            href="/tabs"
+            style={[styles.button, styles.grayButton]}
+          >
+            <Text style={styles.buttonText}>Review Payment and Address</Text>
+          </TouchableOpacity>
+        )}
 
-        <TouchableOpacity
-          href="/screen/payment_order/payment_progress"
-          style={[styles.button, styles.purpleButton]}
-        >
-          <Text style={styles.buttonTextPurp}>View My Order</Text>
-        </TouchableOpacity>
+        {orderStatus === "in_progress" && (
+          <TouchableOpacity
+            href="/screen/payment_order/payment_progress"
+            style={[styles.button, styles.purpleButton]}
+          >
+            <Text style={styles.buttonTextPurp}>In Progress</Text>
+          </TouchableOpacity>
+        )}
+
+        {orderStatus !== "finished" && orderStatus !== "in_order" && orderStatus !== "in_progress" && (
+          <TouchableOpacity
+            href="/tabs"
+            style={[styles.button, styles.grayButton]}
+          >
+            <Text style={styles.buttonText}>Order Other Foods</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Add any other conditional logic for different statuses */}
       </View>
     </View>
   );
