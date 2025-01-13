@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,12 +6,19 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { collection, addDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { db } from "services/FirebaseConfig.ts";
+
 
 const FoodDetailScreen = () => {
   const params = useLocalSearchParams();
+  const [isAddingToOrder, setIsAddingToOrder] = useState(false);
+  const auth = getAuth();
 
   if (!params) {
     return (
@@ -20,6 +27,49 @@ const FoodDetailScreen = () => {
       </View>
     );
   }
+
+  const handleAddToOrder = async () => {
+    if (!auth.currentUser) {
+      Alert.alert("Error", "Please login to place an order");
+      return;
+    }
+
+    setIsAddingToOrder(true);
+    try {
+      const orderData = {
+        userId: auth.currentUser.uid,
+        productId: params.id,
+        quantity: 1, // Default to 1, you could add a quantity selector
+        price: parseFloat(String(params.price)),
+        status: "in_order",
+        createdAt: new Date(),
+        storeName: params.storeName, // Fallback to avoid undefined
+        productName: params.name, // For easier querying/display
+        productImage: params.image, // Store the image URL
+        orderNumber: `ORD${Date.now()}`, // Unique order number
+        customerName: auth.currentUser.displayName || "Guest",
+        customerEmail: auth.currentUser.email,
+        totalAmount: parseFloat(String(params.price)), // price * quantity
+      };
+
+      const inProgressRef = collection(db, "in_progress");
+      await addDoc(inProgressRef, orderData);
+      
+      Alert.alert(
+        "Success",
+        "Item added to orders!",
+        [{ text: "OK", onPress: () => console.log("OK Pressed") }]
+      );
+    } catch (error) {
+      console.error("Error adding to order:", error);
+      Alert.alert(
+        "Error",
+        "Failed to add item to orders. Please try again."
+      );
+    } finally {
+      setIsAddingToOrder(false);
+    }
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -60,7 +110,7 @@ const FoodDetailScreen = () => {
         </View>
 
         <Text style={styles.description}>{params.description}</Text>
-
+              
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Ingredients:</Text>
           <Text style={styles.sectionContent}>{params.ingredients}</Text>
@@ -71,8 +121,17 @@ const FoodDetailScreen = () => {
             <Text style={styles.priceLabel}>Total Price</Text>
             <Text style={styles.price}>{"₱" + params.price}</Text>
           </View>
-          <TouchableOpacity style={styles.orderButton}>
-            <Text style={styles.orderButtonText}>Order Now</Text>
+          <TouchableOpacity 
+            style={[
+              styles.orderButton,
+              isAddingToOrder && styles.orderButtonDisabled
+            ]}
+            onPress={handleAddToOrder}
+            disabled={isAddingToOrder}
+          >
+            <Text style={styles.orderButtonText}>
+              {isAddingToOrder ? "Adding..." : "Add to orders"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
