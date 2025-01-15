@@ -13,7 +13,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import backArrow from "@/assets/images/arrow-back.png";
 import { Dropdown } from "react-native-element-dropdown";
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc } from "firebase/firestore";
 
 const db = getFirestore();
 
@@ -61,7 +61,7 @@ const AddressScreen = () => {
       Alert.alert("Success", "Address saved successfully!", [
         {
           text: "OK",
-          onPress: () => router.push("/(auth)/registered"),
+          onPress: () => router.push("/registered"),
         },
       ]);
     } catch (error) {
@@ -155,10 +155,7 @@ const AddressScreen = () => {
           />
 
           <Pressable
-            style={[
-              styles.signUpNowStyle,
-              isLoading && styles.disabledButton,
-            ]}
+            style={[styles.signUpNowStyle, isLoading && styles.disabledButton]}
             onPress={handleSignUp}
             disabled={isLoading}
           >
@@ -181,7 +178,6 @@ const AddressScreen = () => {
     </SafeAreaProvider>
   );
 };
-
 
 const styles = StyleSheet.create({
   safeAreaContainer: {

@@ -14,8 +14,14 @@ import {
 import { Link } from "expo-router";
 import { getProducts } from "@/services/products/crud_product";
 import { getStores } from "@/services/store/crud_store";
-import { getAuth } from 'firebase/auth';
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { getAuth } from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 
 const { width } = Dimensions.get("window");
 const db = getFirestore();
@@ -26,10 +32,11 @@ export default function App() {
   const [storeData, setStoreData] = useState([]);
   const [products, setProducts] = useState({});
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [userAddress, setUserAddress] = useState({
     address: "Loading...",
     city: "Loading...",
-    houseNumber: ""
+    houseNumber: "",
   });
 
   useEffect(() => {
@@ -42,13 +49,13 @@ export default function App() {
             where("userId", "==", currentUser.uid)
           );
           const querySnapshot = await getDocs(addressQuery);
-          
+
           if (!querySnapshot.empty) {
             const addressData = querySnapshot.docs[0].data();
             setUserAddress({
               address: addressData.address,
               city: addressData.city,
-              houseNumber: addressData.houseNumber
+              houseNumber: addressData.houseNumber,
             });
           }
         } catch (error) {
@@ -59,7 +66,6 @@ export default function App() {
 
     fetchUserAddress();
   }, []);
-
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -75,9 +81,8 @@ export default function App() {
         const storeNameMap = activeStores.reduce((acc, store) => {
           acc[store.id] = store.storeName;
           return acc;
-      
         }, {});
-    
+
         let allProducts = [];
         let storeProductsMap = {};
 
@@ -86,7 +91,6 @@ export default function App() {
           const activeProducts = storeProducts.filter(
             (product) => product.status
           );
-
 
           if (activeProducts.length > 0) {
             allProducts = [
@@ -98,7 +102,7 @@ export default function App() {
                 price: product.price,
                 img: product.img,
                 storeId: store.id,
-                storeName: storeNameMap[store.id], // Look up store name using ID
+                storeName: storeNameMap[store.id],
                 status: product.status,
                 rating: 4.5,
               })),
@@ -114,7 +118,7 @@ export default function App() {
                 price: product.price,
                 img: product.img,
                 storeId: store.id,
-                storeName: storeNameMap[store.id], // Look up store name using ID
+                storeName: storeNameMap[store.id],
                 status: product.status,
                 rating: 4.5,
               })),
@@ -128,14 +132,14 @@ export default function App() {
             uri: product.img,
             title: product.productName,
             ratings: product.rating.toString(),
-            description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            description:
+              "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             ingredients: "Nam quis nibh velit",
             price: product.price,
             likes: Math.floor(Math.random() * 20) + 5,
-            storeName: storeNameMap[product.storeId] // Use storeId to look up the store name
+            storeName: storeNameMap[product.storeId], // Use storeId to look up the store name
           }))
         );
-        
 
         setProducts(storeProductsMap);
       } catch (error) {
@@ -155,6 +159,31 @@ export default function App() {
     if (userAddress.houseNumber) parts.push(userAddress.houseNumber);
     if (userAddress.address) parts.push(userAddress.address);
     return parts.join(" ");
+  };
+
+  const getFilteredProducts = () => {
+    if (!searchQuery.trim()) {
+      return getActiveData();
+    }
+    const query = searchQuery.toLowerCase().trim();
+    const filteredStores = {};
+
+    Object.entries(products).forEach(([storeId, storeData]) => {
+      const filteredProducts = storeData.products.filter((product) =>
+        product.productName.toLowerCase().includes(query)
+      );
+
+      if (filteredProducts.length > 0) {
+        filteredStores[storeId] = {
+          ...storeData,
+          products: filteredProducts,
+        };
+      }
+    });
+    if (Object.keys(filteredStores).length > 0) {
+      return Object.values(filteredStores);
+    }
+    return [];
   };
 
   return (
@@ -180,6 +209,8 @@ export default function App() {
         <TextInput
           style={styles.searchField}
           placeholder="Search Something..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
         />
       </View>
 
@@ -191,23 +222,23 @@ export default function App() {
           contentContainerStyle={styles.scrollView}
         >
           {featuredProducts.map((product) => (
-  <Link
-    key={product.id}
-    href={{
-      pathname: "/screen/food_details/[id]",
-      params: {
-        id: product.id,
-        name: product.title,
-        image: product.uri,
-        rating: product.ratings,
-        likes: product.likes,
-        description: product.description,
-        ingredients: product.ingredients,
-        price: product.price,
-        storeName: product.storeName // Add this line to pass the store name
-      },
-    }}
-    style={styles.card}
+            <Link
+              key={product.id}
+              href={{
+                pathname: "/screen/food_details/[id]",
+                params: {
+                  id: product.id,
+                  name: product.title,
+                  image: product.uri,
+                  rating: product.ratings,
+                  likes: product.likes,
+                  description: product.description,
+                  ingredients: product.ingredients,
+                  price: product.price,
+                  storeName: product.storeName,
+                },
+              }}
+              style={styles.card}
             >
               <Image source={{ uri: product.uri }} style={styles.image} />
               <Text style={styles.title}>{product.title}</Text>
@@ -229,7 +260,10 @@ export default function App() {
           {storeData.map((store) => (
             <TouchableOpacity
               key={store.id}
-              onPress={() => setActiveTab(store.id)}
+              onPress={() => {
+                setActiveTab(store.id);
+                setSearchQuery("");
+              }}
               style={[styles.tab, activeTab === store.id && styles.activeTab]}
             >
               <Text
@@ -248,8 +282,7 @@ export default function App() {
           style={styles.foodList}
           showsVerticalScrollIndicator={false}
         >
-
-          {getActiveData().map(
+          {getFilteredProducts().map(
             (store) =>
               store && (
                 <View key={store.storeName}>
@@ -270,10 +303,9 @@ export default function App() {
                             ingredients:
                               "Fresh ingredients from local suppliers",
                             price: item.price,
-                            storeName: store.storeName
+                            storeName: store.storeName,
                           },
                         }}
-                        
                       >
                         <TouchableOpacity style={styles.foodItem}>
                           <Image
@@ -303,6 +335,11 @@ export default function App() {
                     ))}
                 </View>
               )
+          )}
+          {getFilteredProducts().length === 0 && searchQuery.trim() !== "" && (
+            <View style={styles.noResultsContainer}>
+              <Text style={styles.noResultsText}>No products found</Text>
+            </View>
           )}
         </ScrollView>
       </View>
