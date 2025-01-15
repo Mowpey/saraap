@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,26 +7,75 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getAuth } from "firebase/auth";
-import { collection, addDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/services/FirebaseConfig";
+import { useSearchParams } from "expo-router/build/hooks";
 
-const AddNewAddress = () => {
+const EditAddress = () => {
   const router = useRouter();
+  const params = useSearchParams();
   const auth = getAuth();
 
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-    addressType: "Home",
-    addressTitle: "",
-    houseNumber: "",
-    city: "",
-    address: "",
-  });
+  const [formData, setFormData] = useState(() => ({
+    fullName: params?.fullName || "",
+    email: params?.email || "",
+    phoneNumber: params?.phoneNumber || "",
+    addressType: params?.addressType || "Home",
+    addressTitle: params?.addressTitle || "",
+    houseNumber: params?.houseNumber || "",
+    city: params?.city || "",
+    address: params?.address || "",
+  }));
+
+  useEffect(() => {
+    if (!params) return;
+
+    const newFormData = {
+      fullName: params.get("fullName") || "",
+      email: params.get("email") || "",
+      phoneNumber: params.get("phoneNumber") || "",
+      addressType: params.get("addressType") || "Home",
+      addressTitle: params.get("addressTitle") || "",
+      houseNumber: params.get("houseNumber") || "",
+      city: params.get("city") || "",
+      address: params.get("address") || "",
+    };
+    if (JSON.stringify(newFormData) !== JSON.stringify(formData)) {
+      setFormData(newFormData);
+    }
+  }, []);
+
+  const handleSave = async () => {
+    console.log("Saving:", formData);
+    try {
+      const addressId = params.get("addressId");
+      if (!addressId) {
+        alert("Error: Address ID not found");
+        return;
+      }
+
+      const addressRef = doc(db, "addresses", addressId);
+      await updateDoc(addressRef, {
+        ...formData,
+        updatedAt: new Date().toISOString(),
+      });
+
+      await updateDoc(addressRef, {
+        ...formData,
+        updatedAt: new Date().toISOString(),
+      });
+
+      alert("Address updated successfully");
+
+      router.replace("/screen/address/myaddress");
+    } catch (error) {
+      console.error("Error updating address:", error);
+      alert("Failed to update address");
+    }
+  };
 
   const toggleAddressType = () => {
     setFormData((prev) => ({
@@ -35,42 +84,15 @@ const AddNewAddress = () => {
     }));
   };
 
-  const handleSave = async () => {
-    try {
-      const currentUser = auth.currentUser;
-      if (!currentUser) {
-        Alert.alert("Error", "You must be logged in to add an address");
-        return;
-      }
-
-      if (!formData.fullName || !formData.phoneNumber || !formData.address) {
-        Alert.alert("Error", "Please fill in all required fields");
-        return;
-      }
-
-      const addressData = {
-        ...formData,
-        userId: currentUser.uid,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      await addDoc(collection(db, "addresses"), addressData);
-      Alert.alert("Success", "Address added successfully");
-      router.replace("/screen/address/myaddress");
-    } catch (error) {
-      console.error("Error adding address:", error);
-      Alert.alert("Error", "Failed to add address");
-    }
+  const handleBack = () => {
+    router.push("/screen/address/myaddress");
   };
 
   return (
     <View style={styles.container}>
-      <Link href="/screen/address/myaddress">
-        <TouchableOpacity style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#fff" />
-        </TouchableOpacity>
-      </Link>
+      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+        <Ionicons name="chevron-back" size={24} color="#fff" />
+      </TouchableOpacity>
 
       <View style={styles.formContainer}>
         <TextInput
@@ -130,7 +152,7 @@ const AddNewAddress = () => {
       </View>
 
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>Save</Text>
+        <Text style={styles.saveButtonText}>Save Changes</Text>
       </TouchableOpacity>
     </View>
   );
@@ -186,4 +208,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddNewAddress;
+export default EditAddress;
