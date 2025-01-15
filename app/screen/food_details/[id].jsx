@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,23 +10,84 @@ import {
 } from "react-native";
 import { useLocalSearchParams, Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, deleteDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db } from "services/FirebaseConfig.ts";
-
 
 const FoodDetailScreen = () => {
   const params = useLocalSearchParams();
   const [isAddingToOrder, setIsAddingToOrder] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const auth = getAuth();
 
-  if (!params) {
-    return (
-      <View style={styles.container}>
-        <Text>Food item not found</Text>
-      </View>
-    );
-  }
+  useEffect(() => {
+    checkIfFavorite();
+  }, []);
+
+  const checkIfFavorite = async () => {
+    if (!auth.currentUser) return;
+
+    try {
+      const favoritesRef = collection(db, "favorites");
+      const q = query(
+        favoritesRef,
+        where("userId", "==", auth.currentUser.uid),
+        where("productId", "==", params.id)
+      );
+
+      const querySnapshot = await getDocs(q);
+      setIsFavorite(!querySnapshot.empty);
+    } catch (error) {
+      console.error("Error checking favorite status:", error);
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!auth.currentUser) {
+      Alert.alert("Error", "Please login to add favorites");
+      return;
+    }
+
+    try {
+      const favoritesRef = collection(db, "favorites");
+      const q = query(
+        favoritesRef,
+        where("userId", "==", auth.currentUser.uid),
+        where("productId", "==", params.id)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        
+        const favoriteData = {
+          userId: auth.currentUser.uid,
+          productId: params.id,
+          name: params.name,
+          price: parseFloat(String(params.price)),
+          image: params.image,
+          rating: Number(params.rating),
+          description: params.description,
+          ingredients: params.ingredients,
+          likes: params.likes,
+          storeName: params.storeName,
+          createdAt: new Date(),
+        };
+
+        await addDoc(favoritesRef, favoriteData);
+        setIsFavorite(true);
+        Alert.alert("Success", "Added to favorites!");
+      } else {
+       
+        const docToDelete = querySnapshot.docs[0];
+        await deleteDoc(docToDelete.ref);
+        setIsFavorite(false);
+        Alert.alert("Success", "Removed from favorites!");
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      Alert.alert("Error", "Failed to update favorites. Please try again.");
+    }
+  };
 
   const handleAddToOrder = async () => {
     if (!auth.currentUser) {
@@ -39,17 +100,17 @@ const FoodDetailScreen = () => {
       const orderData = {
         userId: auth.currentUser.uid,
         productId: params.id,
-        quantity: 1, // Default to 1, you could add a quantity selector
+        quantity: 1,
         price: parseFloat(String(params.price)),
         status: "in_order",
         createdAt: new Date(),
-        storeName: params.storeName, // Fallback to avoid undefined
-        productName: params.name, // For easier querying/display
-        productImage: params.image, // Store the image URL
-        orderNumber: `ORD${Date.now()}`, // Unique order number
+        storeName: params.storeName,
+        productName: params.name,
+        productImage: params.image,
+        orderNumber: `ORD${Date.now()}`,
         customerName: auth.currentUser.displayName || "Guest",
         customerEmail: auth.currentUser.email,
-        totalAmount: parseFloat(String(params.price)), // price * quantity
+        totalAmount: parseFloat(String(params.price)),
       };
 
       const inProgressRef = collection(db, "in_progress");
@@ -70,6 +131,14 @@ const FoodDetailScreen = () => {
       setIsAddingToOrder(false);
     }
   };
+
+  if (!params) {
+    return (
+      <View style={styles.container}>
+        <Text>Food item not found</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -103,8 +172,12 @@ const FoodDetailScreen = () => {
           </View>
           <View style={styles.likesContainer}>
             <Text style={styles.likesText}>{params.likes}</Text>
-            <TouchableOpacity>
-              <Ionicons name="heart-outline" size={24} color="black" />
+            <TouchableOpacity onPress={handleToggleFavorite}>
+              <Ionicons
+                name={isFavorite ? "heart" : "heart-outline"}
+                size={24}
+                color={isFavorite ? "red" : "black"}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -232,6 +305,9 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 25,
+  },
+  orderButtonDisabled: {
+    opacity: 0.5,
   },
   orderButtonText: {
     color: "white",
