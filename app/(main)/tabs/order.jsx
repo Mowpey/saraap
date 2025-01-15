@@ -10,30 +10,60 @@ import { db } from "services/FirebaseConfig.ts";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
   
-const getButtonText = (orders) => {
+const getButtonText = (orders, deliveryTime) => {
   if (!orders || orders.length === 0) return null;
   
-  // Check if all orders have the same status
   const allInOrder = orders.every(order => order.status === 'in_order');
   const anyInProgress = orders.some(order => order.status === 'in_progress');
   const allFinished = orders.every(order => order.status === 'finished');
   
   if (allFinished) {
-    return null; // Don't show button
+    return null;
   } else if (anyInProgress) {
-    return 'Estimated Delivery: 20 mins'; // Display estimated delivery time
+    const minutes = Math.floor(deliveryTime / 60);
+    const seconds = deliveryTime % 60;
+    return `Estimated Delivery: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   } else if (allInOrder) {
     return 'Review Payment and Address';
   }
-  return 'Review Payment and Address'; // Default text
+  return 'Review Payment and Address';
 };
 const useInProgressOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-
-
+  const [deliveryTime, setDeliveryTime] = useState(10);
+  const [deliveryMessage, setDeliveryMessage] = useState('');
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const orderRef = doc(db, 'in_progress', orderId);
+      await updateDoc(orderRef, {
+        status: newStatus
+      });
+      
+      if (newStatus === 'finished') {
+        setDeliveryMessage('The food has been delivered!');
+        // Immediately remove finished orders from the state
+        setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
+        
+        // Clear the message after 5 seconds
+        setTimeout(() => {
+          setDeliveryMessage('');
+        }, 5000);
+      } else {
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === orderId 
+              ? { ...order, status: newStatus }
+              : order
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      throw error;
+    }
+  };
   const fetchOrders = async () => {
     try {
       const auth = getAuth();
@@ -45,7 +75,7 @@ const useInProgressOrders = () => {
         return;
       }
 
-      console.log('Fetching orders for user:', user.uid);
+
       
       const q = query(
         collection(db, 'in_progress'),
@@ -62,7 +92,7 @@ const useInProgressOrders = () => {
   }))
   .filter(order => order.status !== 'finished'); 
 
-      console.log('Orders fetched:', ordersData.length);
+
       setOrders(ordersData);
     } catch (err) {
       console.error('Error fetching orders:', err);
@@ -112,7 +142,12 @@ const useInProgressOrders = () => {
     error, 
     updateOrderQuantity,
     deleteOrder,
-    refreshOrders: fetchOrders
+    refreshOrders: fetchOrders,
+    updateOrderStatus,
+    deliveryTime,
+    setDeliveryTime,
+    deliveryMessage,
+    setDeliveryMessage
   };
 };
 
@@ -128,10 +163,42 @@ const OrdersScreen = () => {
     error, 
     updateOrderQuantity, 
     deleteOrder, 
-    refreshOrders  // Add this
+    refreshOrders,
+    updateOrderStatus,
+    deliveryTime,
+    setDeliveryTime,
+    deliveryMessage,
+    setDeliveryMessage
   } = useInProgressOrders();
 
+  useEffect(() => {
+    let timer;
+    const inProgressOrders = orders.filter(order => order.status === 'in_progress');
+    
+    if (inProgressOrders.length > 0 && deliveryTime > 0) {
+      timer = setInterval(() => {
+        setDeliveryTime(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            // Update each in_progress order to finished
+            Promise.all(
+              inProgressOrders.map(async (order) => {
+                await updateOrderStatus(order.id, 'finished');
+              })
+            );
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
 
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [orders, deliveryTime]);
   const [fontsLoaded] = useFonts({
     'Poppins-Regular': require('@/assets/fonts/Poppins-Regular.ttf'),
     'Poppins-Medium': require('@/assets/fonts/Poppins-Medium.ttf'),
@@ -157,8 +224,21 @@ const OrdersScreen = () => {
       refreshOrders();
     }
   }, [activeTab]);
-  
-  
+ 
+  const showEmptyState = () => {
+    // Only show empty state if:
+    // 1. We're on the In Progress tab
+    // 2. Either there are no orders, or none of them are in_progress/in_order
+    if (deliveryMessage) return false;
+    if (activeTab !== 'In Progress') return false;
+    
+    if (!orders || orders.length === 0) return true;
+    
+    return !orders.some(order => 
+      order.status === 'in_progress' || order.status === 'in_order'
+    );
+  };
+
   const handleReviewPayment = () => {
     const userId = auth.currentUser?.uid;
     // Calculate total amount from all orders
@@ -237,8 +317,8 @@ const OrdersScreen = () => {
   }, [activeTab]);
 
   const pastOrders = [
-    { id: 1, title: 'Curry', count: '1 item • ₱ 99', image: require('@/assets/images/curry.jpg'), date: 'Nov 3', time: '14:00' },
-    { id: 2, title: 'Avocado', count: '1 item • ₱ 60', image: require('@/assets/images/avocado.jpg'), date: 'Nov 3', time: '09:00', status: 'Cancelled' },
+    { id: 1, title: 'Fries', count: '1 item • ₱ 45', image: require('@/assets/images/fries.png'), date: 'Nov 3', time: '14:00' },
+    { id: 2, title: 'Yum Burger', count: '1 item • ₱ 40', image: require('@/assets/images/yumburger.png'), date: 'Nov 3', time: '09:00', status: 'Cancelled' },
   ];
 
   const formatPrice = (price) => {
@@ -323,6 +403,7 @@ const OrdersScreen = () => {
         colors={['#000']}
       />
     }>
+
       <View style={styles.header}>
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerTitle}>Your Orders</Text>
@@ -368,21 +449,80 @@ const OrdersScreen = () => {
           ? orders.map(order => renderOrderItem(order))
           : pastOrders.map(order => renderOrderItem(order))}
       </View>
+      {deliveryMessage && (
+  <View style={styles.messageContainer}>
+    <Ionicons name="checkmark-circle" size={24} color="white" />
+    <Text style={styles.deliveryMessage}>{deliveryMessage}</Text>
+  </View>
+)}   
+
+ {showEmptyState() && (
+        <>
+          <View style={styles.container1}>
+            <Image
+              source={require('@/assets/images/burger.png')}
+              style={styles.image1}
+            />
+          </View>
+          <Text style={styles.title1}>Ouch! Hungry</Text>
+          <Text style={styles.description1}>
+            Seems like you have not ordered any food yet
+          </Text>
+          <View style={styles.buttonContainer1}>
+            <TouchableOpacity href="/tabs/" style={[styles.button1, styles.grayButton1]}>
+              <Text style={styles.buttonText1}>Find Foods</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
+
 
       {activeTab === 'In Progress' && orders.length > 0 && (
         <TouchableOpacity 
-  style={styles.reviewButton}
-  onPress={handleReviewPayment}
-  disabled={getButtonText(orders) === 'Estimated Delivery: 20 mins'} 
->
-  <Text style={styles.buttonText}>{getButtonText(orders)}</Text>
-</TouchableOpacity> 
+        style={styles.reviewButton}
+        onPress={handleReviewPayment}
+        disabled={orders.some(order => order.status === 'in_progress')}
+      >
+        <Text style={styles.buttonText}>
+          {getButtonText(orders, deliveryTime)}
+        </Text>
+      </TouchableOpacity> 
       )}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  messageContainer: {
+    backgroundColor: '#4CAF50',
+    padding: moderateScale(16),
+    marginHorizontal: moderateScale(16),
+    marginTop: verticalScale(16),
+    borderRadius: moderateScale(12),
+    flexDirection: 'row',
+    alignItems: 'center', 
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#43A047',
+  },
+  
+  deliveryMessage: {
+    color: 'white',
+    fontFamily: 'Poppins-Medium',
+    fontSize: moderateScale(16),
+    textAlign: 'center',
+    letterSpacing: 0.3,
+    paddingLeft: moderateScale(8),
+    paddingRight: moderateScale(8),
+  },
   quantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -557,6 +697,56 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: moderateScale(16),
     fontFamily: 'Poppins-Medium',
+  },
+  container1: {
+    flex: 1,
+    justifyContent: 'center',  // Vertically center
+    alignItems: 'center',      // Horizontally center
+    backgroundColor:'#fff',
+  },
+  image1: {
+    marginTop: verticalScale(-70),
+    transform: [{ scale: 0.7 }],
+    
+  },
+  title1: {
+    fontFamily: 'Poppins-Medium',
+    fontSize: moderateScale(18),
+    marginBottom: verticalScale(-5),
+    marginTop:verticalScale(-30),
+    textAlign: 'center',
+  },
+  description1: {
+    fontFamily: 'Poppins-Regular',
+    fontSize: moderateScale(14),
+    textAlign: 'center',
+    marginVertical: verticalScale(10),
+    color: '#666',
+    marginHorizontal:moderateScale(55)
+
+  },
+  buttonContainer1: {
+    flexDirection: 'column',
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginVertical: verticalScale(20),
+    width: '100%',
+  },
+  button1: {
+    paddingVertical: verticalScale(12),
+    paddingHorizontal: scale(20),
+    borderRadius: moderateScale(10),
+    alignItems: 'center', 
+    width: '65%', 
+    marginBottom: verticalScale(10),
+  },
+  grayButton1: {
+    backgroundColor: '#020452',
+  },
+  buttonText1: {
+    fontFamily: 'Poppins-Medium',
+    fontSize: moderateScale(14),
+    color: '#fff',
   },
 });
 
