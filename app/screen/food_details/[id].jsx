@@ -8,16 +8,33 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useLocalSearchParams, Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { collection, addDoc, query, where, getDocs, deleteDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  deleteDoc,
+} from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db } from "services/FirebaseConfig.ts";
+import completedPicture from "@/assets/images/completed.png";
 
 const FoodDetailScreen = () => {
   const params = useLocalSearchParams();
   const [isAddingToOrder, setIsAddingToOrder] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const auth = getAuth();
 
   useEffect(() => {
@@ -58,7 +75,6 @@ const FoodDetailScreen = () => {
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        
         const favoriteData = {
           userId: auth.currentUser.uid,
           productId: params.id,
@@ -77,7 +93,6 @@ const FoodDetailScreen = () => {
         setIsFavorite(true);
         Alert.alert("Success", "Added to favorites!");
       } else {
-       
         const docToDelete = querySnapshot.docs[0];
         await deleteDoc(docToDelete.ref);
         setIsFavorite(false);
@@ -115,18 +130,14 @@ const FoodDetailScreen = () => {
 
       const inProgressRef = collection(db, "in_progress");
       await addDoc(inProgressRef, orderData);
-      
-      Alert.alert(
-        "Success",
-        "Item added to orders!",
-        [{ text: "OK", onPress: () => console.log("OK Pressed") }]
-      );
+
+      Alert.alert("Success", "Item added to orders!", [
+        { text: "OK", onPress: () => console.log("OK Pressed") },
+      ]);
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error("Error adding to order:", error);
-      Alert.alert(
-        "Error",
-        "Failed to add item to orders. Please try again."
-      );
+      Alert.alert("Error", "Failed to add item to orders. Please try again.");
     } finally {
       setIsAddingToOrder(false);
     }
@@ -141,74 +152,98 @@ const FoodDetailScreen = () => {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Link href="/tabs" style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="black" />
-        </Link>
-        <Image source={{ uri: params.image }} style={styles.foodImage} />
-      </View>
+    <>
+      <ScrollView style={styles.container}>
+        <View style={styles.imageContainer}>
+          <Link href="/tabs" style={styles.backButton}>
+            <Ionicons name="chevron-back" size={24} color="black" />
+          </Link>
+          <Image source={{ uri: params.image }} style={styles.foodImage} />
+        </View>
 
-      <View style={styles.contentContainer}>
-        <View style={styles.headerSection}>
-          <View>
-            <Text style={styles.title}>{params.name}</Text>
-            <View style={styles.ratingContainer}>
-              {[...Array(Math.floor(Number(params.rating)))].map((_, index) => (
-                <Ionicons key={index} name="star" size={16} color="#FFD700" />
-              ))}
-              {[...Array(5 - Math.floor(Number(params.rating)))].map(
-                (_, index) => (
-                  <Ionicons
-                    key={index}
-                    name="star-outline"
-                    size={16}
-                    color="#FFD700"
-                  />
-                )
-              )}
-              <Text style={styles.ratingText}>{params.rating}</Text>
+        <View style={styles.contentContainer}>
+          <View style={styles.headerSection}>
+            <View>
+              <Text style={styles.title}>{params.name}</Text>
+              <View style={styles.ratingContainer}>
+                {[...Array(Math.floor(Number(params.rating)))].map(
+                  (_, index) => (
+                    <Ionicons
+                      key={index}
+                      name="star"
+                      size={16}
+                      color="#FFD700"
+                    />
+                  )
+                )}
+                {[...Array(5 - Math.floor(Number(params.rating)))].map(
+                  (_, index) => (
+                    <Ionicons
+                      key={index}
+                      name="star-outline"
+                      size={16}
+                      color="#FFD700"
+                    />
+                  )
+                )}
+                <Text style={styles.ratingText}>{params.rating}</Text>
+              </View>
+            </View>
+            <View style={styles.likesContainer}>
+              <Text style={styles.likesText}>{params.likes}</Text>
+              <TouchableOpacity onPress={handleToggleFavorite}>
+                <Ionicons
+                  name={isFavorite ? "heart" : "heart-outline"}
+                  size={24}
+                  color={isFavorite ? "red" : "black"}
+                />
+              </TouchableOpacity>
             </View>
           </View>
-          <View style={styles.likesContainer}>
-            <Text style={styles.likesText}>{params.likes}</Text>
-            <TouchableOpacity onPress={handleToggleFavorite}>
-              <Ionicons
-                name={isFavorite ? "heart" : "heart-outline"}
-                size={24}
-                color={isFavorite ? "red" : "black"}
-              />
+
+          <Text style={styles.description}>{params.description}</Text>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Ingredients:</Text>
+            <Text style={styles.sectionContent}>{params.ingredients}</Text>
+          </View>
+
+          <View style={styles.footer}>
+            <View>
+              <Text style={styles.priceLabel}>Total Price</Text>
+              <Text style={styles.price}>{"₱" + params.price}</Text>
+            </View>
+            <TouchableOpacity
+              style={[
+                styles.orderButton,
+                isAddingToOrder && styles.orderButtonDisabled,
+              ]}
+              onPress={handleAddToOrder}
+              disabled={isAddingToOrder}
+            >
+              <Text style={styles.orderButtonText}>
+                {isAddingToOrder ? "Adding..." : "Add to orders"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
-
-        <Text style={styles.description}>{params.description}</Text>
-              
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Ingredients:</Text>
-          <Text style={styles.sectionContent}>{params.ingredients}</Text>
-        </View>
-
-        <View style={styles.footer}>
-          <View>
-            <Text style={styles.priceLabel}>Total Price</Text>
-            <Text style={styles.price}>{"₱" + params.price}</Text>
-          </View>
-          <TouchableOpacity 
-            style={[
-              styles.orderButton,
-              isAddingToOrder && styles.orderButtonDisabled
-            ]}
-            onPress={handleAddToOrder}
-            disabled={isAddingToOrder}
-          >
-            <Text style={styles.orderButtonText}>
-              {isAddingToOrder ? "Adding..." : "Add to orders"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent className="flex flex-col items-center">
+          <AlertDialogHeader className="py-3">
+            <AlertDialogTitle className="font-bold text-xl">
+              Successfully Added to Orders!
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <Image source={completedPicture} />
+          <AlertDialogFooter className="py-3">
+            <AlertDialogAction onClick={() => setShowSuccessDialog(false)}>
+              Click to Dismiss
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

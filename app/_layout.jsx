@@ -37,6 +37,7 @@ export default function RootLayout() {
         <Stack.Screen name="(main)/tabs" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(admin)" options={{ headerShown: false }} />
+        <Stack.Screen name="(rate_app)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>
