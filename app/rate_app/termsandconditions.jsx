@@ -133,8 +133,8 @@ const TermsAndConditions = () => {
               <Text style={styles.sectionTitle}>8. Governing Law</Text>
               <Text style={styles.bodyText}>
                 These terms shall be governed by and construed in accordance
-                with the laws of [Your Jurisdiction], without regard to its
-                conflict of law provisions.
+                with the laws of Tuguegarao City, without regard to its conflict
+                of law provisions.
               </Text>
             </View>
 
