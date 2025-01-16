@@ -30,6 +30,7 @@ const getButtonText = (orders, deliveryTime) => {
 };
 const useInProgressOrders = () => {
   const [orders, setOrders] = useState([]);
+  const [finishedorders,setFinishedOrders] = useState([])
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deliveryTime, setDeliveryTime] = useState(10);
@@ -45,7 +46,7 @@ const useInProgressOrders = () => {
         setDeliveryMessage('The food has been delivered!');
         // Immediately remove finished orders from the state
         setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
-        
+        fetchFinishedOrders();
         // Clear the message after 5 seconds
         setTimeout(() => {
           setDeliveryMessage('');
@@ -64,6 +65,39 @@ const useInProgressOrders = () => {
       throw error;
     }
   };
+      //copy and modify this
+      const fetchFinishedOrders = async () => {
+        try {
+          const auth = getAuth();
+          const user = auth.currentUser;
+          
+          if (!user) {
+            console.log('No user logged in');
+            setLoading(false);
+            return;
+          }
+          const q = query(
+            collection(db, 'in_progress'),
+            where('userId', '==', user.uid),
+          );
+    
+          const querySnapshot = await getDocs(q);
+          const ordersData = querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        
+      }))
+      .filter(order => order.status == 'finished'); 
+          setFinishedOrders(ordersData);
+        } catch (err) {
+          console.error('Error fetching orders:', err);
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
   const fetchOrders = async () => {
     try {
       const auth = getAuth();
@@ -74,9 +108,6 @@ const useInProgressOrders = () => {
         setLoading(false);
         return;
       }
-
-
-      
       const q = query(
         collection(db, 'in_progress'),
         where('userId', '==', user.uid),
@@ -84,15 +115,12 @@ const useInProgressOrders = () => {
 
       const querySnapshot = await getDocs(q);
       const ordersData = querySnapshot.docs
-      
   .map(doc => ({
     id: doc.id,
     ...doc.data(),
     
   }))
   .filter(order => order.status !== 'finished'); 
-
-
       setOrders(ordersData);
     } catch (err) {
       console.error('Error fetching orders:', err);
@@ -133,11 +161,18 @@ const useInProgressOrders = () => {
   };
 
   useEffect(() => {
-    fetchOrders();
+    const loadInitialData = async () => {
+      setLoading(true);
+      await Promise.all([fetchOrders(), fetchFinishedOrders()]);
+      setLoading(false);
+    };
+    
+    loadInitialData();
   }, []);
 
   return { 
     orders, 
+    finishedorders,
     loading, 
     error, 
     updateOrderQuantity,
@@ -159,6 +194,7 @@ const OrdersScreen = () => {
   const indicatorPosition = useRef(new Animated.Value(0)).current;
   const { 
     orders, 
+    finishedorders,
     loading, 
     error, 
     updateOrderQuantity, 
@@ -361,15 +397,24 @@ const OrdersScreen = () => {
         </View>
       );
     } else {
+      // THIS IS TO CHANGE PAST ORDERS
       return (
         <View key={order.id} style={styles.orderItem}>
-          <Image source={order.image} style={styles.itemImage} />
+                    <Image 
+            source={{ uri: order.productImage }} 
+            style={styles.itemImage}
+            defaultSource={require('@/assets/images/splash.jpg')}
+          />
           <View style={styles.itemDetails}>
-            <Text style={styles.itemTitle}>{order.title}</Text>
-            <Text style={styles.itemCount}>{order.count}</Text>
+            <Text style={styles.itemTitle}>{order.productName}</Text>
+            <Text style={styles.itemCount}>
+              {order.quantity} {order.quantity === 1 ? 'item' : 'items'} • {formatPrice(order.totalAmount)}
+            </Text>
+            <Text style={styles.storeText}>{order.storeName}</Text>
           </View>
+
           <View style={styles.itemInfo}>
-            <Text style={styles.itemDate}>{order.date}, {order.time}</Text>
+          
             {order.status && <Text style={styles.itemStatus}>{order.status}</Text>}
           </View>
         </View>
@@ -443,12 +488,14 @@ const OrdersScreen = () => {
           ]}
         />
       </View>
-
+          {/* here */}
       <View style={styles.ordersContainer}>
         {activeTab === 'In Progress' 
           ? orders.map(order => renderOrderItem(order))
-          : pastOrders.map(order => renderOrderItem(order))}
+          : finishedorders.map(order => renderOrderItem(order))}
       </View>
+
+
       {deliveryMessage && (
   <View style={styles.messageContainer}>
     <Ionicons name="checkmark-circle" size={24} color="white" />
