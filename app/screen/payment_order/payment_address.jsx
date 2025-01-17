@@ -138,7 +138,7 @@ const PaymentScreen = () => {
     orderDetails.name === "Jollibee"
       ? { uri: "https://upload.wikimedia.org/wikipedia/en/thumb/8/84/Jollibee_2011_logo.svg/1200px-Jollibee_2011_logo.svg.png" }
       : orderDetails.name === "Chowking"
-      ? { uri: "https://example.com/mcdonalds-image.jpg" } 
+      ? { uri: "https://icon2.cleanpng.com/20180524/ayu/avqrcepm3.webp" } 
       : orderDetails.name === "McDonalds"
       ? { uri: "https://www.negros-occ.gov.ph/wp-content/uploads/2023/04/McDonalds-logo.png" } 
       : require('@/assets/images/splash.jpg') 
