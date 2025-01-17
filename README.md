@@ -1,50 +1,68 @@
-# Welcome to your Expo app 👋
+# Food Delivery App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is a **React Native** food delivery application built using **Expo**. The app connects users to local farmers, allowing them to order fresh organic produce. It includes a fully integrated backend for managing CRUD operations, ensuring seamless data handling for users and administrators.
 
-## Get started
+---
 
-1. Install dependencies
+## Features
+
+- **User Authentication**: Secure user registration and login.
+- **Browse Products**: View fresh produce available for delivery.
+- **Search and Filter**: Find specific items with advanced filtering options.
+- **Add to Cart**: Seamless cart functionality for adding/removing items.
+- **Order Management**: Track order history and current deliveries.
+- **Admin Features**:
+  - Manage products (add, update, delete).
+  - View and process orders.
+- **Real-Time Updates**: Backend updates reflected instantly on the frontend.
+
+---
+
+## Tech Stack
+
+### Frontend
+
+- **React Native**: Cross-platform app development.
+- **Expo**: Simplified development and deployment.
+- **React Navigation**: Smooth navigation between screens.
+- **Axios**: For handling API requests.
+
+### Backend
+
+- **Node.js**: Backend server.
+- **Express.js**: RESTful API for CRUD operations.
+- **Firebase**: Authentication and real-time database integration.
+- **PostgreSQL**: Relational database for storing application data.
+
+---
+
+## Installation
+
+### Prerequisites
+
+- Node.js and npm installed.
+- Expo CLI installed (`npm install -g expo-cli`).
+- Backend server set up and running (see [Backend Setup](#backend-setup)).
+
+### Steps
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/your-repo/food-delivery-app.git
+   cd food-delivery-app
+
+   ```
+
+2. Install backend dependencies:
 
    ```bash
    npm install
+
    ```
 
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+3. Start the app:
 
 ```bash
-npm run reset-project
+   npx expo start
 ```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
