@@ -114,15 +114,14 @@ const ProfileScreen = () => {
       <ScrollView style={styles.contentContainer}>
         {activeTab === "Account" && (
           <View>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push("/screen/edit-profile/edit-profile")}>
               <Ionicons name="person-outline" size={24} color="#333" />
               <Text style={styles.menuItemText}>Edit Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}>
-              <Ionicons name="home-outline" size={24} color="#333" />
-              <Text style={styles.menuItemText}>Home Address</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity style={styles.menuItem}
+              onPress={() => router.push("/screen/edit-profile/security")}>
               <Ionicons
                 name="shield-checkmark-outline"
                 size={24}
@@ -130,7 +129,8 @@ const ProfileScreen = () => {
               />
               <Text style={styles.menuItemText}>Security</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity  style={styles.menuItem}
+              onPress={() => router.push("/screen/edit-profile/payments")}>
               <Ionicons name="card-outline" size={24} color="#333" />
               <Text style={styles.menuItemText}>Payments</Text>
             </TouchableOpacity>
