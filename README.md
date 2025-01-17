@@ -1,13 +1,13 @@
 # Food Delivery App
 
-This is a **React Native** food delivery application built using **Expo**. The app connects users to local farmers, allowing them to order fresh organic produce. It includes a fully integrated backend for managing CRUD operations, ensuring seamless data handling for users and administrators.
+This is a **React Native** food delivery application built using **Expo**. The app connects users to local restaurants, allowing them to order fast and delicious food at hand. It includes a fully integrated backend for managing CRUD operations, ensuring seamless data handling for users and administrators.
 
 ---
 
 ## Features
 
 - **User Authentication**: Secure user registration and login.
-- **Browse Products**: View fresh produce available for delivery.
+- **Browse Products**: View restaurant quality food.
 - **Search and Filter**: Find specific items with advanced filtering options.
 - **Add to Cart**: Seamless cart functionality for adding/removing items.
 - **Order Management**: Track order history and current deliveries.
@@ -25,14 +25,11 @@ This is a **React Native** food delivery application built using **Expo**. The a
 - **React Native**: Cross-platform app development.
 - **Expo**: Simplified development and deployment.
 - **React Navigation**: Smooth navigation between screens.
-- **Axios**: For handling API requests.
+- **Shadcn/ui**: For templating and table UI.
 
 ### Backend
 
-- **Node.js**: Backend server.
-- **Express.js**: RESTful API for CRUD operations.
-- **Firebase**: Authentication and real-time database integration.
-- **PostgreSQL**: Relational database for storing application data.
+- **Firebase**: Backend server.
 
 ---
 
