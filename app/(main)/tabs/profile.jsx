@@ -116,12 +116,15 @@ const ProfileScreen = () => {
           <View>
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => router.push("/screen/edit-profile/edit-profile")}>
+              onPress={() => router.push("/screen/edit-profile/edit-profile")}
+            >
               <Ionicons name="person-outline" size={24} color="#333" />
               <Text style={styles.menuItemText}>Edit Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}
-              onPress={() => router.push("/screen/edit-profile/security")}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push("/screen/edit-profile/security")}
+            >
               <Ionicons
                 name="shield-checkmark-outline"
                 size={24}
@@ -129,8 +132,10 @@ const ProfileScreen = () => {
               />
               <Text style={styles.menuItemText}>Security</Text>
             </TouchableOpacity>
-            <TouchableOpacity  style={styles.menuItem}
-              onPress={() => router.push("/screen/edit-profile/payments")}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push("/screen/edit-profile/payments")}
+            >
               <Ionicons name="card-outline" size={24} color="#333" />
               <Text style={styles.menuItemText}>Payments</Text>
             </TouchableOpacity>
@@ -146,28 +151,28 @@ const ProfileScreen = () => {
           <View>
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => router.push("/rate_app/ratepage")}
+              onPress={() => router.push("/screen/rate_app/ratepage")}
             >
               <Ionicons name="star-outline" size={24} color="#333" />
               <Text style={styles.menuItemText}>Rate App</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => router.push("/rate_app/helpcenter")}
+              onPress={() => router.push("/screen/rate_app/helpcenter")}
             >
               <Ionicons name="help" size={24} color="#333" />
               <Text style={styles.menuItemText}>Help Center</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => router.push("/rate_app/privacypolicy")}
+              onPress={() => router.push("/screen/rate_app/privacypolicy")}
             >
               <Ionicons name="shield-sharp" size={24} color="#333" />
               <Text style={styles.menuItemText}>Privacy & Policy</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => router.push("/rate_app/termsandconditions")}
+              onPress={() => router.push("/screen/rate_app/termsandconditions")}
             >
               <Ionicons name="newspaper-outline" size={24} color="#333" />
               <Text style={styles.menuItemText}>Terms & Conditions</Text>
