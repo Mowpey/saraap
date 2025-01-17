@@ -56,14 +56,7 @@ const AddressScreen = () => {
         city,
         createdAt: new Date().toISOString(),
       });
-
-      console.log("Document written with ID: ", docRef.id);
-      Alert.alert("Success", "Address saved successfully!", [
-        {
-          text: "OK",
-          onPress: () => router.push("/registered"),
-        },
-      ]);
+      router.push("/registered");
     } catch (error) {
       console.error("Error adding document: ", error);
       Alert.alert("Error", "Failed to save address. Please try again.");
